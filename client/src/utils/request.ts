@@ -16,11 +16,11 @@ export async function request<T = unknown>(
     ...options,
   });
 
-  const data = await response.json();
+  const data = await response.json() as { code?: number; message?: string; data?: T };
 
   if (!response.ok) {
     throw new Error(data.message || '请求失败');
   }
 
-  return data;
+  return data as T;
 }

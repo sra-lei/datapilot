@@ -1,0 +1,146 @@
+/**
+ * SQLite适配器
+ * 用于开发环境，无需额外安装数据库服务
+ */
+
+import Database from 'better-sqlite3';
+import { IDatabaseAdapter, QueryResult, QueryRow } from './IDatabaseAdapter';
+
+export class SQLiteAdapter implements IDatabaseAdapter {
+  private db: Database.Database | null = null;
+  private dbPath: string;
+
+  constructor(dbPath: string = './data/trae.db') {
+    this.dbPath = dbPath;
+  }
+
+  /**
+   * 初始化数据库连接
+   */
+  async initialize(): Promise<void> {
+    // 确保目录存在
+    const fs = await import('fs');
+    const path = await import('path');
+    const dir = path.dirname(this.dbPath);
+
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
+
+    this.db = new Database(this.dbPath);
+    this.db.pragma('journal_mode = WAL');
+
+    // 初始化表结构
+    this.initTables();
+  }
+
+  /**
+   * 初始化表结构
+   */
+  private initTables(): void {
+    if (!this.db) throw new Error('Database not initialized');
+
+    // 创建用户表
+    this.db.exec(`
+      CREATE TABLE IF NOT EXISTS users (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        username TEXT UNIQUE NOT NULL,
+        password TEXT NOT NULL,
+        email TEXT,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+  }
+
+  /**
+   * 执行查询
+   */
+  async query(sql: string, params?: unknown[]): Promise<QueryResult> {
+    if (!this.db) throw new Error('Database not initialized');
+
+    try {
+      const stmt = this.db.prepare(sql);
+      const rows = (params ? stmt.all(...params) : stmt.all()) as QueryRow[];
+      return { rows };
+    } catch (error) {
+      throw this.handleError(error);
+    }
+  }
+
+  /**
+   * 执行插入
+   */
+  async insert(sql: string, params?: unknown[]): Promise<QueryResult> {
+    if (!this.db) throw new Error('Database not initialized');
+
+    try {
+      const stmt = this.db.prepare(sql);
+      const result = params ? stmt.run(...params) : stmt.run();
+      return {
+        insertId: Number(result.lastInsertRowid),
+        affectedRows: result.changes,
+      };
+    } catch (error) {
+      throw this.handleError(error);
+    }
+  }
+
+  /**
+   * 执行更新
+   */
+  async update(sql: string, params?: unknown[]): Promise<QueryResult> {
+    if (!this.db) throw new Error('Database not initialized');
+
+    try {
+      const stmt = this.db.prepare(sql);
+      const result = params ? stmt.run(...params) : stmt.run();
+      return { affectedRows: result.changes };
+    } catch (error) {
+      throw this.handleError(error);
+    }
+  }
+
+  /**
+   * 执行删除
+   */
+  async delete(sql: string, params?: unknown[]): Promise<QueryResult> {
+    if (!this.db) throw new Error('Database not initialized');
+
+    try {
+      const stmt = this.db.prepare(sql);
+      const result = params ? stmt.run(...params) : stmt.run();
+      return { affectedRows: result.changes };
+    } catch (error) {
+      throw this.handleError(error);
+    }
+  }
+
+  /**
+   * 关闭数据库连接
+   */
+  async close(): Promise<void> {
+    if (this.db) {
+      this.db.close();
+      this.db = null;
+    }
+  }
+
+  /**
+   * 获取适配器名称
+   */
+  getName(): string {
+    return 'SQLite';
+  }
+
+  /**
+   * 统一错误处理
+   */
+  private handleError(error: unknown): Error {
+    const err = error as { code?: string; message?: string };
+    if (err.code === 'SQLITE_CONSTRAINT_UNIQUE') {
+      return new Error('ER_DUP_ENTRY');
+    }
+    return error as Error;
+  }
+}

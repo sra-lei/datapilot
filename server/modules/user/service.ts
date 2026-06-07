@@ -3,11 +3,17 @@
  * 处理用户相关业务逻辑
  */
 
-import { pool } from '../../config/db';
-import { ResultSetHeader, RowDataPacket } from 'mysql2';
+import { DatabaseFactory } from '../../database';
 import { ErrorCode, UserInfo, ServiceResult } from './types';
 import { MESSAGES } from './constants';
 import { RegisterParams, LoginParams, ChangePasswordParams } from './types';
+
+/**
+ * 获取数据库适配器
+ */
+function getDb() {
+  return DatabaseFactory.getInstance();
+}
 
 /**
  * 用户注册
@@ -15,22 +21,24 @@ import { RegisterParams, LoginParams, ChangePasswordParams } from './types';
 export async function register(params: RegisterParams): Promise<ServiceResult<UserInfo>> {
   try {
     const { username, password, email } = params;
-    const [ result ] = await pool.query<ResultSetHeader>(
+    const db = getDb();
+
+    const result = await db.insert(
       'INSERT INTO users (username, password, email) VALUES (?, ?, ?)',
-      [ username, password, email || null ],
+      [username, password, email || null],
     );
 
     return {
       success: true,
       data: {
-        id: result.insertId,
+        id: result.insertId!,
         username,
         email: email || null,
       },
     };
   } catch (err: unknown) {
-    const error = err as { code?: string };
-    if (error.code === 'ER_DUP_ENTRY') {
+    const error = err as { message?: string };
+    if (error.message === 'ER_DUP_ENTRY') {
       return {
         success: false,
         error: {
@@ -56,12 +64,14 @@ export async function register(params: RegisterParams): Promise<ServiceResult<Us
 export async function login(params: LoginParams): Promise<ServiceResult<UserInfo>> {
   try {
     const { username, password } = params;
-    const [ rows ] = await pool.query<RowDataPacket[]>(
+    const db = getDb();
+
+    const result = await db.query(
       'SELECT id, username, email FROM users WHERE username = ? AND password = ?',
-      [ username, password ],
+      [username, password],
     );
 
-    if (rows.length === 0) {
+    if (!result.rows || result.rows.length === 0) {
       return {
         success: false,
         error: {
@@ -73,7 +83,7 @@ export async function login(params: LoginParams): Promise<ServiceResult<UserInfo
 
     return {
       success: true,
-      data: rows[0] as UserInfo,
+      data: result.rows[0] as unknown as UserInfo,
     };
   } catch (_err: unknown) {
     return {
@@ -92,12 +102,15 @@ export async function login(params: LoginParams): Promise<ServiceResult<UserInfo
 export async function changePassword(params: ChangePasswordParams): Promise<ServiceResult> {
   try {
     const { username, oldPassword, newPassword } = params;
-    const [ rows ] = await pool.query<RowDataPacket[]>(
+    const db = getDb();
+
+    // 验证旧密码
+    const result = await db.query(
       'SELECT id FROM users WHERE username = ? AND password = ?',
-      [ username, oldPassword ],
+      [username, oldPassword],
     );
 
-    if (rows.length === 0) {
+    if (!result.rows || result.rows.length === 0) {
       return {
         success: false,
         error: {
@@ -107,9 +120,10 @@ export async function changePassword(params: ChangePasswordParams): Promise<Serv
       };
     }
 
-    await pool.query(
+    // 更新密码
+    await db.update(
       'UPDATE users SET password = ? WHERE username = ?',
-      [ newPassword, username ],
+      [newPassword, username],
     );
 
     return { success: true };
