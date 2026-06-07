@@ -8,6 +8,8 @@ import Login from '../pages/Login';
 import Register from '../pages/Register';
 import Dashboard from '../pages/Dashboard';
 import DatabaseViewer from '../pages/DatabaseViewer';
+import UserManagement from '../pages/Users';
+import SystemSettings from '../pages/Settings';
 
 const routes: RouteObject[] = [
   {
@@ -29,6 +31,14 @@ const routes: RouteObject[] = [
       {
         path: '/database',
         element: <DatabaseViewer />,
+      },
+      {
+        path: '/users',
+        element: <UserManagement />,
+      },
+      {
+        path: '/settings',
+        element: <SystemSettings />,
       },
     ],
   },
