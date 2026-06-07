@@ -1,7 +1,10 @@
+/**
+ * 数据库配置和初始化
+ */
+
 const mysql = require('mysql2/promise');
 const dbConfig = require('./database');
-const { logDatabase, logError, generateTraceId, OPERATIONS } = require('../utils/logUtils');
-const { MESSAGES } = require('../constants/userConstants');
+const { generateTraceId } = require('../utils/logUtils');
 
 const pool = mysql.createPool(dbConfig);
 
@@ -9,17 +12,21 @@ const pool = mysql.createPool(dbConfig);
 async function initDatabase() {
   const traceId = generateTraceId();
   const connection = await pool.getConnection();
+
   try {
+    const { logDatabase, OPERATIONS } = require('../utils/logUtils');
+    const { SYSTEM_MESSAGES } = require('../constants');
+
     logDatabase(OPERATIONS.DB_INIT, '开始初始化数据库', {
       traceId,
       database: dbConfig.database,
       host: dbConfig.host,
     });
-    
+
     // 创建数据库（如果不存在）
     await connection.query(`CREATE DATABASE IF NOT EXISTS ${dbConfig.database}`);
     await connection.query(`USE ${dbConfig.database}`);
-    
+
     // 创建用户表
     await connection.query(`
       CREATE TABLE IF NOT EXISTS users (
@@ -31,13 +38,19 @@ async function initDatabase() {
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
       )
     `);
-    
-    logDatabase(OPERATIONS.DB_INIT, MESSAGES.DB_INIT_SUCCESS, {
+
+    logDatabase(OPERATIONS.DB_INIT, SYSTEM_MESSAGES.DB_INIT_SUCCESS, {
       traceId,
       tables: [ 'users' ],
     });
   } catch (error) {
-    logError(OPERATIONS.DB_INIT, MESSAGES.DB_INIT_FAILED, error, {
+    const { OPERATIONS } = require('../utils/logUtils');
+    const { SYSTEM_MESSAGES } = require('../constants');
+
+    // 重新导入 logError 因为它在 try 块之外使用
+    const { logError } = require('../utils/logUtils');
+
+    logError(OPERATIONS.DB_INIT, SYSTEM_MESSAGES.DB_INIT_FAILED, error, {
       traceId,
       database: dbConfig.database,
     });

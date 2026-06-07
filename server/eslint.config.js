@@ -15,7 +15,7 @@ module.exports = [
       'indent': [ 'error', 2 ],
       'quotes': [ 'error', 'single' ],
       'semi': [ 'error', 'always' ],
-      'no-unused-vars': [ 'warn' ],
+      'no-unused-vars': [ 'warn', { 'argsIgnorePattern': '^_' } ],
       'no-console': [ 'warn' ],
       'comma-dangle': [ 'error', 'always-multiline' ],
       'space-before-function-paren': [ 'error', 'never' ],

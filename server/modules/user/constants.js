@@ -2,6 +2,7 @@
  * 用户模块常量
  */
 
+// 用户相关错误码
 const ERROR_CODES = {
   SUCCESS: 200,
   BAD_REQUEST: 400,
@@ -13,7 +14,9 @@ const ERROR_CODES = {
   SERVICE_UNAVAILABLE: 503,
 };
 
+// 用户相关消息
 const MESSAGES = {
+  // 通用
   SUCCESS: '操作成功',
 
   // 参数校验
@@ -36,6 +39,7 @@ const MESSAGES = {
   CHANGE_PASSWORD_FAILED: '修改密码失败',
 };
 
+// 操作类型
 const OPERATIONS = {
   USER_REGISTER: 'USER_REGISTER',
   USER_LOGIN: 'USER_LOGIN',
