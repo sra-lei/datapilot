@@ -32,12 +32,12 @@ async function startServer() {
     app.listen(PORT, () => {
       logSystem(OPERATIONS.SERVER_START, MESSAGES.SERVER_START_SUCCESS, {
         port: PORT,
-        nodeEnv: process.env.NODE_ENV || 'development'
+        nodeEnv: process.env.NODE_ENV || 'development',
       });
     });
   } catch (error) {
     logError(OPERATIONS.SERVER_START, MESSAGES.SERVER_START_FAILED, error, {
-      port: PORT
+      port: PORT,
     });
   }
 }

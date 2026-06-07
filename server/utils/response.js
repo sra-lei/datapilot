@@ -12,7 +12,7 @@ function success(res, data = null, message = '操作成功') {
   return res.status(200).json({
     code: 200,
     message,
-    data
+    data,
   });
 }
 
@@ -25,11 +25,11 @@ function success(res, data = null, message = '操作成功') {
 function error(res, code, message) {
   return res.status(code).json({
     code,
-    message
+    message,
   });
 }
 
 module.exports = {
   success,
-  error
+  error,
 };

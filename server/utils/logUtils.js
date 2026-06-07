@@ -29,7 +29,7 @@ const OPERATIONS = {
   
   // 通用操作
   REQUEST: 'REQUEST',
-  VALIDATION: 'VALIDATION'
+  VALIDATION: 'VALIDATION',
 };
 
 // 创建日志实例
@@ -37,11 +37,11 @@ const logger = winston.createLogger({
   level: process.env.LOG_LEVEL || 'info',
   format: winston.format.combine(
     winston.format.timestamp({
-      format: 'YYYY-MM-DD HH:mm:ss.SSS'
+      format: 'YYYY-MM-DD HH:mm:ss.SSS',
     }),
     winston.format.errors({ stack: true }),
     winston.format.splat(),
-    winston.format.json()
+    winston.format.json(),
   ),
   defaultMeta: { service: 'trae-server' },
   transports: [
@@ -67,7 +67,7 @@ const logger = winston.createLogger({
           }
           
           // 添加其他元数据
-          const metaKeys = ['operation', 'userId', 'traceId', 'service'];
+          const metaKeys = [ 'operation', 'userId', 'traceId', 'service' ];
           const extraMeta = Object.keys(meta)
             .filter(key => !metaKeys.includes(key))
             .reduce((obj, key) => {
@@ -80,15 +80,15 @@ const logger = winston.createLogger({
           }
           
           return log;
-        })
-      )
+        }),
+      ),
     }),
     // 文件输出 - 所有日志
     new winston.transports.File({ 
       filename: 'logs/combined.log',
       maxsize: 5242880, // 5MB
       maxFiles: 10,
-      tailable: true
+      tailable: true,
     }),
     // 文件输出 - 错误日志
     new winston.transports.File({ 
@@ -96,7 +96,7 @@ const logger = winston.createLogger({
       level: 'error',
       maxsize: 5242880, // 5MB
       maxFiles: 10,
-      tailable: true
+      tailable: true,
     }),
     // 文件输出 - 用户操作日志
     new winston.transports.File({ 
@@ -107,10 +107,10 @@ const logger = winston.createLogger({
       tailable: true,
       format: winston.format.combine(
         winston.format.timestamp(),
-        winston.format.json()
-      )
-    })
-  ]
+        winston.format.json(),
+      ),
+    }),
+  ],
 });
 
 /**
@@ -129,7 +129,7 @@ function generateTraceId() {
 function logUserOperation(operation, message, context = {}) {
   logger.info(message, {
     operation,
-    ...context
+    ...context,
   });
 }
 
@@ -145,7 +145,7 @@ function logError(operation, message, error, context = {}) {
     operation,
     errorMessage: error.message || String(error),
     errorStack: error.stack || '',
-    ...context
+    ...context,
   };
   
   logger.error(message, errorInfo);
@@ -160,7 +160,7 @@ function logError(operation, message, error, context = {}) {
 function logWarn(operation, message, context = {}) {
   logger.warn(message, {
     operation,
-    ...context
+    ...context,
   });
 }
 
@@ -173,7 +173,7 @@ function logWarn(operation, message, context = {}) {
 function logDebug(operation, message, context = {}) {
   logger.debug(message, {
     operation,
-    ...context
+    ...context,
   });
 }
 
@@ -186,7 +186,7 @@ function logDebug(operation, message, context = {}) {
 function logDatabase(operation, message, context = {}) {
   logger.info(message, {
     operation,
-    ...context
+    ...context,
   });
 }
 
@@ -199,7 +199,7 @@ function logDatabase(operation, message, context = {}) {
 function logSystem(operation, message, context = {}) {
   logger.info(message, {
     operation,
-    ...context
+    ...context,
   });
 }
 
@@ -213,5 +213,5 @@ module.exports = {
   logDebug,
   logDatabase,
   logSystem,
-  OPERATIONS
+  OPERATIONS,
 };

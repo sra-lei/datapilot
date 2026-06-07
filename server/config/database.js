@@ -6,5 +6,5 @@ module.exports = {
   database: process.env.DB_NAME || 'trae',
   waitForConnections: true,
   connectionLimit: 10,
-  queueLimit: 0
+  queueLimit: 0,
 };

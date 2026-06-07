@@ -13,7 +13,7 @@ async function initDatabase() {
     logDatabase(OPERATIONS.DB_INIT, '开始初始化数据库', {
       traceId,
       database: dbConfig.database,
-      host: dbConfig.host
+      host: dbConfig.host,
     });
     
     // 创建数据库（如果不存在）
@@ -34,12 +34,12 @@ async function initDatabase() {
     
     logDatabase(OPERATIONS.DB_INIT, MESSAGES.DB_INIT_SUCCESS, {
       traceId,
-      tables: ['users']
+      tables: [ 'users' ],
     });
   } catch (error) {
     logError(OPERATIONS.DB_INIT, MESSAGES.DB_INIT_FAILED, error, {
       traceId,
-      database: dbConfig.database
+      database: dbConfig.database,
     });
     throw error;
   } finally {
