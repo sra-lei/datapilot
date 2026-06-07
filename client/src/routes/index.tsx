@@ -7,6 +7,7 @@ import MainLayout from '../layouts/MainLayout';
 import Login from '../pages/Login';
 import Register from '../pages/Register';
 import Dashboard from '../pages/Dashboard';
+import DatabaseViewer from '../pages/DatabaseViewer';
 
 const routes: RouteObject[] = [
   {
@@ -24,6 +25,10 @@ const routes: RouteObject[] = [
       {
         path: '/dashboard',
         element: <Dashboard />,
+      },
+      {
+        path: '/database',
+        element: <DatabaseViewer />,
       },
     ],
   },

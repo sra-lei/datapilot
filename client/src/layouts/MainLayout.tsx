@@ -25,6 +25,11 @@ function MainLayout() {
       label: '仪表盘',
     },
     {
+      key: '/database',
+      icon: <FileTextOutlined />,
+      label: '数据库管理',
+    },
+    {
       key: '/users',
       icon: <UserOutlined />,
       label: '用户管理',

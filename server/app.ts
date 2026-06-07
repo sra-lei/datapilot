@@ -5,6 +5,7 @@
 import express, { Application, Request, Response } from 'express';
 import cors from 'cors';
 import userRouter from './modules/user/router';
+import databaseManagerRouter from './modules/database-manager/router';
 
 const app: Application = express();
 
@@ -14,6 +15,7 @@ app.use(express.json());
 
 // 路由配置
 app.use('/api/user', userRouter);
+app.use('/api/database', databaseManagerRouter);
 
 // 基础路由
 app.get('/', (_req: Request, res: Response) => {
