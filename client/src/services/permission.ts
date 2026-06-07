@@ -42,14 +42,14 @@ export interface ApiResponse<T = unknown> {
  * 获取所有权限
  */
 export async function getAllPermissions(): Promise<ApiResponse<Permission[]>> {
-  return request('/api/permission/permissions');
+  return request('/permission/permissions');
 }
 
 /**
  * 创建权限
  */
 export async function createPermission(name: string, description?: string): Promise<ApiResponse<Permission>> {
-  return request('/api/permission/permissions', {
+  return request('/permission/permissions', {
     method: 'POST',
     body: JSON.stringify({ name, description }),
   });
@@ -59,7 +59,7 @@ export async function createPermission(name: string, description?: string): Prom
  * 删除权限
  */
 export async function deletePermission(id: number): Promise<ApiResponse<void>> {
-  return request(`/api/permission/permissions/${id}`, {
+  return request(`/permission/permissions/${id}`, {
     method: 'DELETE',
   });
 }
@@ -68,21 +68,21 @@ export async function deletePermission(id: number): Promise<ApiResponse<void>> {
  * 获取所有角色
  */
 export async function getAllRoles(): Promise<ApiResponse<Role[]>> {
-  return request('/api/permission/roles');
+  return request('/permission/roles');
 }
 
 /**
  * 获取角色详情（包括权限）
  */
 export async function getRoleWithPermissions(id: number): Promise<ApiResponse<RoleWithPermissions>> {
-  return request(`/api/permission/roles/${id}`);
+  return request(`/permission/roles/${id}`);
 }
 
 /**
  * 创建角色
  */
 export async function createRole(name: string, description?: string): Promise<ApiResponse<Role>> {
-  return request('/api/permission/roles', {
+  return request('/permission/roles', {
     method: 'POST',
     body: JSON.stringify({ name, description }),
   });
@@ -96,7 +96,7 @@ export async function updateRole(
   name: string,
   description?: string
 ): Promise<ApiResponse<Role>> {
-  return request(`/api/permission/roles/${id}`, {
+  return request(`/permission/roles/${id}`, {
     method: 'PUT',
     body: JSON.stringify({ name, description }),
   });
@@ -106,7 +106,7 @@ export async function updateRole(
  * 删除角色
  */
 export async function deleteRole(id: number): Promise<ApiResponse<void>> {
-  return request(`/api/permission/roles/${id}`, {
+  return request(`/permission/roles/${id}`, {
     method: 'DELETE',
   });
 }
@@ -118,7 +118,7 @@ export async function grantPermission(
   roleId: number,
   permissionId: number
 ): Promise<ApiResponse<void>> {
-  return request(`/api/permission/roles/${roleId}/permissions`, {
+  return request(`/permission/roles/${roleId}/permissions`, {
     method: 'POST',
     body: JSON.stringify({ permissionId }),
   });
@@ -131,7 +131,7 @@ export async function revokePermission(
   roleId: number,
   permissionId: number
 ): Promise<ApiResponse<void>> {
-  return request(`/api/permission/roles/${roleId}/permissions/${permissionId}`, {
+  return request(`/permission/roles/${roleId}/permissions/${permissionId}`, {
     method: 'DELETE',
   });
 }
@@ -143,7 +143,7 @@ export async function assignRole(
   userId: number,
   roleId: number
 ): Promise<ApiResponse<void>> {
-  return request(`/api/permission/users/${userId}/roles`, {
+  return request(`/permission/users/${userId}/roles`, {
     method: 'POST',
     body: JSON.stringify({ roleId }),
   });
@@ -156,7 +156,7 @@ export async function revokeUserRole(
   userId: number,
   roleId: number
 ): Promise<ApiResponse<void>> {
-  return request(`/api/permission/users/${userId}/roles/${roleId}`, {
+  return request(`/permission/users/${userId}/roles/${roleId}`, {
     method: 'DELETE',
   });
 }
@@ -165,5 +165,5 @@ export async function revokeUserRole(
  * 获取用户的角色和权限
  */
 export async function getUserPermissions(userId: number): Promise<ApiResponse<UserWithRoles>> {
-  return request(`/api/permission/users/${userId}/permissions`);
+  return request(`/permission/users/${userId}/permissions`);
 }

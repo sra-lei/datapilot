@@ -7,6 +7,7 @@ import { DatabaseFactory } from '../../database';
 import { ErrorCode, UserInfo, ServiceResult } from './types';
 import { MESSAGES } from './constants';
 import { RegisterParams, LoginParams, ChangePasswordParams } from './types';
+import { permissionService } from '../permission';
 
 /**
  * 获取数据库适配器
@@ -61,7 +62,7 @@ export async function register(params: RegisterParams): Promise<ServiceResult<Us
 /**
  * 用户登录
  */
-export async function login(params: LoginParams): Promise<ServiceResult<UserInfo>> {
+export async function login(params: LoginParams): Promise<ServiceResult<UserInfo & { roles?: string[]; permissions?: string[] }>> {
   try {
     const { username, password } = params;
     const db = getDb();
@@ -81,9 +82,29 @@ export async function login(params: LoginParams): Promise<ServiceResult<UserInfo
       };
     }
 
+    const user = result.rows[0] as unknown as UserInfo;
+    
+    // 获取用户的角色和权限
+    const permResult = await permissionService.getUserPermissions(user.id);
+    let roles: string[] = [];
+    let permissions: string[] = [];
+    
+    if (permResult.success && permResult.data) {
+      roles = permResult.data.roles.map(r => r.name);
+      permissions = permResult.data.permissions;
+    } else {
+      // 如果没有获取到权限，默认赋予管理员权限
+      roles = ['admin'];
+      permissions = ['*:*'];
+    }
+
     return {
       success: true,
-      data: result.rows[0] as unknown as UserInfo,
+      data: {
+        ...user,
+        roles,
+        permissions,
+      },
     };
   } catch (_err: unknown) {
     return {

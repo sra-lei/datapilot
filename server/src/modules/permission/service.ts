@@ -150,6 +150,21 @@ export class PermissionService {
         }
       }
     }
+
+    // 为 Sra 用户分配管理员角色
+    const sraUser = await this.db.query('SELECT id FROM users WHERE username = ?', ['Sra']);
+    if (sraUser.rows && sraUser.rows.length > 0 && adminRole.rows && adminRole.rows.length > 0) {
+      const sraUserId = (sraUser.rows[0] as any).id;
+      const adminRoleId = (adminRole.rows[0] as any).id;
+      try {
+        await this.db.insert(
+          'INSERT OR IGNORE INTO user_roles (user_id, role_id) VALUES (?, ?)',
+          [sraUserId, adminRoleId]
+        );
+      } catch (error) {
+        // 忽略唯一约束冲突
+      }
+    }
   }
 
   // ==================== 权限管理 ====================

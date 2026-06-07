@@ -3,7 +3,7 @@
  */
 
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { AbilityBuilder, createMongoAbility, Ability } from '@casl/ability';
+import { defineAbility, Ability } from '@casl/ability';
 import { getUserPermissions, UserWithRoles } from '../services/permission';
 
 interface AuthUser {
@@ -26,49 +26,43 @@ interface PermissionContextType {
 // 创建权限上下文
 const PermissionContext = createContext<PermissionContextType | undefined>(undefined);
 
-// 定义权限规则类型
-type Actions = 'create' | 'read' | 'update' | 'delete' | 'manage' | 'query';
-type Subjects = 'User' | 'Role' | 'Permission' | 'Database' | 'Settings' | 'all';
-
 // 创建权限能力
 function createAbility(permissions: string[]): Ability {
-  const { can, build } = new AbilityBuilder<Ability>();
+  return defineAbility((can) => {
+    // 定义权限映射
+    permissions.forEach((perm) => {
+      const [action, subject] = perm.split(':');
 
-  // 定义权限映射
-  permissions.forEach((perm) => {
-    const [action, subject] = perm.split(':');
-
-    if (action === '*' || subject === '*') {
-      // 管理员权限 - 拥有所有权限
-      can('manage', 'all');
-    } else {
-      // 根据权限字符串映射到 CASL 动作
-      switch (action) {
-        case 'user':
-          if (subject === 'read') can('read', 'User');
-          if (subject === 'create') can('create', 'User');
-          if (subject === 'update') can('update', 'User');
-          if (subject === 'delete') can('delete', 'User');
-          break;
-        case 'role':
-          if (subject === 'read') can('read', 'Role');
-          if (subject === 'create') can('create', 'Role');
-          if (subject === 'update') can('update', 'Role');
-          if (subject === 'delete') can('delete', 'Role');
-          if (subject === 'assign') can('manage', 'Role');
-          break;
-        case 'database':
-          if (subject === 'read') can('read', 'Database');
-          if (subject === 'query') can('query', 'Database');
-          break;
-        case 'system':
-          if (subject === 'settings') can('manage', 'Settings');
-          break;
+      if (action === '*' || subject === '*') {
+        // 管理员权限 - 拥有所有权限
+        can('manage', 'all');
+      } else {
+        // 根据权限字符串映射到 CASL 动作
+        switch (action) {
+          case 'user':
+            if (subject === 'read') can('read', 'User');
+            if (subject === 'create') can('create', 'User');
+            if (subject === 'update') can('update', 'User');
+            if (subject === 'delete') can('delete', 'User');
+            break;
+          case 'role':
+            if (subject === 'read') can('read', 'Role');
+            if (subject === 'create') can('create', 'Role');
+            if (subject === 'update') can('update', 'Role');
+            if (subject === 'delete') can('delete', 'Role');
+            if (subject === 'assign') can('manage', 'Role');
+            break;
+          case 'database':
+            if (subject === 'read') can('read', 'Database');
+            if (subject === 'query') can('query', 'Database');
+            break;
+          case 'system':
+            if (subject === 'settings') can('manage', 'Settings');
+            break;
+        }
       }
-    }
+    });
   });
-
-  return build();
 }
 
 // Provider 组件

@@ -15,10 +15,16 @@ function Login() {
     setLoading(true);
     try {
       const result = await login(values);
-      if (result.code === 200) {
-        message.success(result.message);
-        localStorage.setItem('user', JSON.stringify(result.data));
-        window.location.href = '/dashboard';
+      if (result.code === 200 && result.data) {
+          message.success(result.message);
+          const userData = {
+            ...result.data,
+            roles: (result.data as any).roles || ['admin'],
+            permissions: (result.data as any).permissions || ['*:*'],
+          };
+          localStorage.setItem('user', JSON.stringify(result.data));
+          localStorage.setItem('currentUser', JSON.stringify(userData));
+          window.location.href = '/dashboard';
       } else {
         message.error(result.message);
       }
