@@ -8,6 +8,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const app_1 = __importDefault(require("./app"));
 const database_1 = require("./database");
+const permission_1 = require("./modules/permission");
 const utils_1 = require("./utils");
 const constants_1 = require("./constants");
 const PORT = process.env.PORT || 3001;
@@ -21,6 +22,9 @@ async function startServer() {
             nodeEnv: process.env.NODE_ENV || 'development',
             dbType: db.getName(),
         });
+        // 初始化权限表
+        await permission_1.permissionService.initializeTables();
+        (0, utils_1.logSystem)(constants_1.SYSTEM_OPERATIONS.SERVER_START, '权限表初始化成功');
         app_1.default.listen(PORT, () => {
             (0, utils_1.logSystem)(constants_1.SYSTEM_OPERATIONS.SERVER_START, constants_1.SYSTEM_MESSAGES.SERVER_START_SUCCESS, {
                 port: PORT,

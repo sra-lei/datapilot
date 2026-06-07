@@ -8,15 +8,18 @@ import {
   UserOutlined,
   FileTextOutlined,
   SettingOutlined,
+  SafetyCertificateOutlined,
 } from '@ant-design/icons';
 import { useState } from 'react';
 import { Outlet, useNavigate } from 'react-router-dom';
+import { usePermission } from '../contexts/PermissionContext';
 
 const { Header, Sider, Content } = Layout;
 
 function MainLayout() {
-  const [ collapsed, setCollapsed ] = useState(false);
+  const [collapsed, setCollapsed] = useState(false);
   const navigate = useNavigate();
+  const { can } = usePermission();
 
   const menuItems = [
     {
@@ -33,6 +36,11 @@ function MainLayout() {
       key: '/users',
       icon: <UserOutlined />,
       label: '用户管理',
+    },
+    {
+      key: '/permissions',
+      icon: <SafetyCertificateOutlined />,
+      label: '权限管理',
     },
     {
       key: '/settings',
@@ -72,7 +80,7 @@ function MainLayout() {
         <Menu
           theme="dark"
           mode="inline"
-          defaultSelectedKeys={[ '/dashboard' ]}
+          defaultSelectedKeys={['/dashboard']}
           items={menuItems}
           onClick={handleMenuClick}
         />

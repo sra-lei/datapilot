@@ -72,6 +72,14 @@ class MySQLAdapter {
         return { affectedRows: result.affectedRows };
     }
     /**
+     * 执行DDL语句（创建表等）
+     */
+    async run(sql) {
+        if (!this.pool)
+            throw new Error('Database not initialized');
+        await this.pool.query(sql);
+    }
+    /**
      * 关闭数据库连接
      */
     async close() {

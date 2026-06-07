@@ -4,6 +4,7 @@
 
 import app from './app';
 import { DatabaseFactory, getDatabaseConfigFromEnv } from './database';
+import { permissionService } from './modules/permission';
 import { logSystem, logError } from './utils';
 import { SYSTEM_OPERATIONS, SYSTEM_MESSAGES } from './constants';
 
@@ -20,6 +21,10 @@ async function startServer(): Promise<void> {
       nodeEnv: process.env.NODE_ENV || 'development',
       dbType: db.getName(),
     });
+
+    // 初始化权限表
+    await permissionService.initializeTables();
+    logSystem(SYSTEM_OPERATIONS.SERVER_START, '权限表初始化成功');
 
     app.listen(PORT, () => {
       logSystem(SYSTEM_OPERATIONS.SERVER_START, SYSTEM_MESSAGES.SERVER_START_SUCCESS, {

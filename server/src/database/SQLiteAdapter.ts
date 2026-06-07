@@ -117,6 +117,14 @@ export class SQLiteAdapter implements IDatabaseAdapter {
   }
 
   /**
+   * 执行DDL语句（创建表等）
+   */
+  async run(sql: string): Promise<void> {
+    if (!this.db) throw new Error('Database not initialized');
+    this.db.exec(sql);
+  }
+
+  /**
    * 关闭数据库连接
    */
   async close(): Promise<void> {

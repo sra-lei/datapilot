@@ -5,9 +5,14 @@
 import { Response } from 'express';
 
 // 成功响应
-export function success<T>(res: Response, data: T | null = null, message: string = '操作成功'): Response {
-  return res.status(200).json({
-    code: 200,
+export function success<T>(
+  res: Response,
+  data: T | null = null,
+  message: string = '操作成功',
+  statusCode: number = 200
+): Response {
+  return res.status(statusCode).json({
+    code: statusCode,
     message,
     data,
   });

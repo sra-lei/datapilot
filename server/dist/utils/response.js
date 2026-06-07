@@ -6,9 +6,9 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.success = success;
 exports.error = error;
 // 成功响应
-function success(res, data = null, message = '操作成功') {
-    return res.status(200).json({
-        code: 200,
+function success(res, data = null, message = '操作成功', statusCode = 200) {
+    return res.status(statusCode).json({
+        code: statusCode,
         message,
         data,
     });

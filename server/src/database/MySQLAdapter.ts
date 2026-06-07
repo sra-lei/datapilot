@@ -102,6 +102,14 @@ export class MySQLAdapter implements IDatabaseAdapter {
   }
 
   /**
+   * 执行DDL语句（创建表等）
+   */
+  async run(sql: string): Promise<void> {
+    if (!this.pool) throw new Error('Database not initialized');
+    await this.pool.query(sql);
+  }
+
+  /**
    * 关闭数据库连接
    */
   async close(): Promise<void> {

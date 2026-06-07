@@ -32,6 +32,10 @@ export declare class SQLiteAdapter implements IDatabaseAdapter {
      */
     delete(sql: string, params?: unknown[]): Promise<QueryResult>;
     /**
+     * 执行DDL语句（创建表等）
+     */
+    run(sql: string): Promise<void>;
+    /**
      * 关闭数据库连接
      */
     close(): Promise<void>;

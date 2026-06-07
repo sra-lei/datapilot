@@ -145,6 +145,14 @@ class SQLiteAdapter {
         }
     }
     /**
+     * 执行DDL语句（创建表等）
+     */
+    async run(sql) {
+        if (!this.db)
+            throw new Error('Database not initialized');
+        this.db.exec(sql);
+    }
+    /**
      * 关闭数据库连接
      */
     async close() {

@@ -10,6 +10,7 @@ import Dashboard from '../pages/Dashboard';
 import DatabaseViewer from '../pages/DatabaseViewer';
 import UserManagement from '../pages/Users';
 import SystemSettings from '../pages/Settings';
+import PermissionManagement from '../pages/Permissions';
 
 const routes: RouteObject[] = [
   {
@@ -35,6 +36,10 @@ const routes: RouteObject[] = [
       {
         path: '/users',
         element: <UserManagement />,
+      },
+      {
+        path: '/permissions',
+        element: <PermissionManagement />,
       },
       {
         path: '/settings',
