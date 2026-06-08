@@ -12,6 +12,7 @@ import UserManagement from '../pages/Users';
 import SystemSettings from '../pages/Settings';
 import PermissionManagement from '../pages/Permissions';
 import Profile from '../pages/Profile';
+import NotFound from '../pages/NotFound';
 
 const routes: RouteObject[] = [
   {
@@ -51,6 +52,10 @@ const routes: RouteObject[] = [
         element: <Profile />,
       },
     ],
+  },
+  {
+    path: '*',
+    element: <NotFound />,
   },
 ];
 
