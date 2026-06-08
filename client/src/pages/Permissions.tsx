@@ -318,7 +318,7 @@ function PermissionManagement() {
                 dataSource={transferData}
                 titles={['可授权限', '已授权限']}
                 targetKeys={rolePermissions as any}
-                onChange={handleTransferChange}
+                onChange={(targetKeys) => handleTransferChange(targetKeys as string[])}
                 render={(item) => item.title!}
                 listStyle={{
                   width: 400,
