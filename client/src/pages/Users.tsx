@@ -65,7 +65,12 @@ function UserManagement() {
       const result = await response.json();
 
       if (result.code === 200) {
-        setUsers(result.data?.rows || []);
+        // 确保每个用户都有默认状态
+        const usersWithStatus = (result.data?.rows || []).map((user: any) => ({
+          ...user,
+          status: user.status || UserStatus.ACTIVE,
+        }));
+        setUsers(usersWithStatus);
       } else {
         message.error(result.message);
       }

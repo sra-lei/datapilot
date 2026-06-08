@@ -82,6 +82,10 @@ async function login(params) {
             };
         }
         const user = result.rows[0];
+        // 确保用户有默认状态
+        if (!user.status) {
+            user.status = types_1.UserStatus.ACTIVE;
+        }
         // 检查用户状态
         if (user.status === types_1.UserStatus.INACTIVE) {
             return {
@@ -260,8 +264,15 @@ async function updateUserStatus(params) {
                 },
             };
         }
-        // 更新用户状态
-        const result = await db.update('UPDATE users SET status = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?', [status, userId]);
+        // 更新用户状态 - 处理可能没有 updated_at 字段的情况
+        let result;
+        try {
+            result = await db.update('UPDATE users SET status = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?', [status, userId]);
+        }
+        catch (error) {
+            // 如果 updated_at 字段不存在，尝试只更新 status
+            result = await db.update('UPDATE users SET status = ? WHERE id = ?', [status, userId]);
+        }
         if (result.affectedRows === 0) {
             return {
                 success: false,
@@ -274,6 +285,7 @@ async function updateUserStatus(params) {
         return { success: true };
     }
     catch (_err) {
+        console.error('更新用户状态失败:', _err);
         return {
             success: false,
             error: {
@@ -311,8 +323,15 @@ async function deleteUser(userId) {
                 },
             };
         }
-        // 将用户状态改为 deleted（软删除）
-        const result = await db.update('UPDATE users SET status = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?', [types_1.UserStatus.DELETED, userId]);
+        // 将用户状态改为 deleted（软删除）- 处理可能没有 updated_at 字段的情况
+        let result;
+        try {
+            result = await db.update('UPDATE users SET status = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?', [types_1.UserStatus.DELETED, userId]);
+        }
+        catch (error) {
+            // 如果 updated_at 字段不存在，尝试只更新 status
+            result = await db.update('UPDATE users SET status = ? WHERE id = ?', [types_1.UserStatus.DELETED, userId]);
+        }
         if (result.affectedRows === 0) {
             return {
                 success: false,
@@ -325,6 +344,7 @@ async function deleteUser(userId) {
         return { success: true };
     }
     catch (_err) {
+        console.error('删除用户失败:', _err);
         return {
             success: false,
             error: {

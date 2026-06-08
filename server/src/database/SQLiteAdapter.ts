@@ -60,6 +60,13 @@ export class SQLiteAdapter implements IDatabaseAdapter {
     } catch (error) {
       // 字段已存在，忽略错误
     }
+
+    // 检查并添加 updated_at 字段（兼容旧数据库）
+    try {
+      this.db.exec(`ALTER TABLE users ADD COLUMN updated_at DATETIME DEFAULT CURRENT_TIMESTAMP`);
+    } catch (error) {
+      // 字段已存在，忽略错误
+    }
   }
 
   /**

@@ -90,7 +90,12 @@ export async function login(params: LoginParams): Promise<ServiceResult<UserInfo
       };
     }
 
-    const user = result.rows[0] as unknown as UserInfo;
+    const user = result.rows[0] as unknown as UserInfo & { status?: string };
+    
+    // 确保用户有默认状态
+    if (!user.status) {
+      user.status = UserStatus.ACTIVE;
+    }
     
     // 检查用户状态
     if (user.status === UserStatus.INACTIVE) {
@@ -299,11 +304,20 @@ export async function updateUserStatus(params: { userId: number; status: UserSta
       };
     }
 
-    // 更新用户状态
-    const result = await db.update(
-      'UPDATE users SET status = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
-      [status, userId],
-    );
+    // 更新用户状态 - 处理可能没有 updated_at 字段的情况
+    let result;
+    try {
+      result = await db.update(
+        'UPDATE users SET status = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
+        [status, userId],
+      );
+    } catch (error) {
+      // 如果 updated_at 字段不存在，尝试只更新 status
+      result = await db.update(
+        'UPDATE users SET status = ? WHERE id = ?',
+        [status, userId],
+      );
+    }
 
     if (result.affectedRows === 0) {
       return {
@@ -317,6 +331,7 @@ export async function updateUserStatus(params: { userId: number; status: UserSta
 
     return { success: true };
   } catch (_err: unknown) {
+    console.error('更新用户状态失败:', _err);
     return {
       success: false,
       error: {
@@ -359,11 +374,20 @@ export async function deleteUser(userId: number): Promise<ServiceResult> {
       };
     }
 
-    // 将用户状态改为 deleted（软删除）
-    const result = await db.update(
-      'UPDATE users SET status = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
-      [UserStatus.DELETED, userId],
-    );
+    // 将用户状态改为 deleted（软删除）- 处理可能没有 updated_at 字段的情况
+    let result;
+    try {
+      result = await db.update(
+        'UPDATE users SET status = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
+        [UserStatus.DELETED, userId],
+      );
+    } catch (error) {
+      // 如果 updated_at 字段不存在，尝试只更新 status
+      result = await db.update(
+        'UPDATE users SET status = ? WHERE id = ?',
+        [UserStatus.DELETED, userId],
+      );
+    }
 
     if (result.affectedRows === 0) {
       return {
@@ -377,6 +401,7 @@ export async function deleteUser(userId: number): Promise<ServiceResult> {
 
     return { success: true };
   } catch (_err: unknown) {
+    console.error('删除用户失败:', _err);
     return {
       success: false,
       error: {
