@@ -11,6 +11,7 @@ import DatabaseViewer from '../pages/DatabaseViewer';
 import UserManagement from '../pages/Users';
 import SystemSettings from '../pages/Settings';
 import PermissionManagement from '../pages/Permissions';
+import Profile from '../pages/Profile';
 
 const routes: RouteObject[] = [
   {
@@ -44,6 +45,10 @@ const routes: RouteObject[] = [
       {
         path: '/settings',
         element: <SystemSettings />,
+      },
+      {
+        path: '/profile',
+        element: <Profile />,
       },
     ],
   },

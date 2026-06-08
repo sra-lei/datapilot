@@ -2,13 +2,16 @@
  * 主布局组件
  */
 
-import { Layout, Menu, Avatar } from 'antd';
+import { Layout, Menu, Avatar, Dropdown, Space } from 'antd';
+import type { MenuProps } from 'antd';
 import {
   DashboardOutlined,
   UserOutlined,
   FileTextOutlined,
   SettingOutlined,
   SafetyCertificateOutlined,
+  UserSwitchOutlined,
+  LogoutOutlined,
 } from '@ant-design/icons';
 import { useState } from 'react';
 import { Outlet, useNavigate } from 'react-router-dom';
@@ -53,8 +56,46 @@ function MainLayout() {
     navigate(key);
   };
 
-  const user = localStorage.getItem('user');
-  const username = user ? JSON.parse(user).username : '用户';
+  // 获取用户信息
+  const getUserInfo = () => {
+    try {
+      const userStr = localStorage.getItem('user');
+      if (userStr) {
+        return JSON.parse(userStr);
+      }
+    } catch (error) {
+      console.error('获取用户信息失败', error);
+    }
+    return null;
+  };
+
+  const userInfo = getUserInfo();
+  const username = userInfo?.username || '用户';
+
+  // 用户下拉菜单
+  const userMenuItems: MenuProps['items'] = [
+    {
+      key: 'profile',
+      icon: <UserSwitchOutlined />,
+      label: '个人资料',
+      onClick: () => navigate('/profile'),
+    },
+    {
+      type: 'divider',
+    },
+    {
+      key: 'logout',
+      icon: <LogoutOutlined />,
+      label: '退出登录',
+      danger: true,
+      onClick: () => {
+        localStorage.removeItem('user');
+        localStorage.removeItem('currentUser');
+        localStorage.removeItem('token');
+        navigate('/login');
+      },
+    },
+  ];
 
   return (
     <Layout style={{ minHeight: '100vh' }}>
@@ -96,10 +137,12 @@ function MainLayout() {
             justifyContent: 'flex-end',
           }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-            <span>{username}</span>
-            <Avatar icon={<UserOutlined />} />
-          </div>
+          <Dropdown menu={{ items: userMenuItems }} placement="bottomRight">
+            <Space style={{ cursor: 'pointer' }}>
+              <span>{username}</span>
+              <Avatar icon={<UserOutlined />} />
+            </Space>
+          </Dropdown>
         </Header>
         <Content
           style={{
