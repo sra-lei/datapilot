@@ -4,7 +4,7 @@
 
 import { Router } from 'express';
 import { register, login, changePassword, deleteUser } from './controller';
-import { requirePermission } from '../middleware/permission';
+import { requirePermission } from '../../middleware/permission';
 
 const router = Router();
 

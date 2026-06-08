@@ -5,12 +5,13 @@
 
 import Database from 'better-sqlite3';
 import { IDatabaseAdapter, QueryResult, QueryRow } from './IDatabaseAdapter';
+import { DB_CONFIG, DB_ERRORS, DB_ADAPTER_NAMES } from '../constants';
 
 export class SQLiteAdapter implements IDatabaseAdapter {
   private db: Database.Database | null = null;
   private dbPath: string;
 
-  constructor(dbPath: string = './data/trae.db') {
+  constructor(dbPath: string = DB_CONFIG.DEFAULT_DB_PATH) {
     this.dbPath = dbPath;
   }
 
@@ -28,7 +29,7 @@ export class SQLiteAdapter implements IDatabaseAdapter {
     }
 
     this.db = new Database(this.dbPath);
-    this.db.pragma('journal_mode = WAL');
+    this.db.pragma(`journal_mode = ${DB_CONFIG.JOURNAL_MODE}`);
 
     // 初始化表结构
     this.initTables();
@@ -38,7 +39,7 @@ export class SQLiteAdapter implements IDatabaseAdapter {
    * 初始化表结构
    */
   private initTables(): void {
-    if (!this.db) throw new Error('Database not initialized');
+    if (!this.db) throw new Error(DB_ERRORS.NOT_INITIALIZED);
 
     // 创建用户表
     this.db.exec(`
@@ -57,7 +58,7 @@ export class SQLiteAdapter implements IDatabaseAdapter {
    * 执行查询
    */
   async query(sql: string, params?: unknown[]): Promise<QueryResult> {
-    if (!this.db) throw new Error('Database not initialized');
+    if (!this.db) throw new Error(DB_ERRORS.NOT_INITIALIZED);
 
     try {
       const stmt = this.db.prepare(sql);
@@ -72,7 +73,7 @@ export class SQLiteAdapter implements IDatabaseAdapter {
    * 执行插入
    */
   async insert(sql: string, params?: unknown[]): Promise<QueryResult> {
-    if (!this.db) throw new Error('Database not initialized');
+    if (!this.db) throw new Error(DB_ERRORS.NOT_INITIALIZED);
 
     try {
       const stmt = this.db.prepare(sql);
@@ -90,7 +91,7 @@ export class SQLiteAdapter implements IDatabaseAdapter {
    * 执行更新
    */
   async update(sql: string, params?: unknown[]): Promise<QueryResult> {
-    if (!this.db) throw new Error('Database not initialized');
+    if (!this.db) throw new Error(DB_ERRORS.NOT_INITIALIZED);
 
     try {
       const stmt = this.db.prepare(sql);
@@ -105,7 +106,7 @@ export class SQLiteAdapter implements IDatabaseAdapter {
    * 执行删除
    */
   async delete(sql: string, params?: unknown[]): Promise<QueryResult> {
-    if (!this.db) throw new Error('Database not initialized');
+    if (!this.db) throw new Error(DB_ERRORS.NOT_INITIALIZED);
 
     try {
       const stmt = this.db.prepare(sql);
@@ -120,7 +121,7 @@ export class SQLiteAdapter implements IDatabaseAdapter {
    * 执行DDL语句（创建表等）
    */
   async run(sql: string): Promise<void> {
-    if (!this.db) throw new Error('Database not initialized');
+    if (!this.db) throw new Error(DB_ERRORS.NOT_INITIALIZED);
     this.db.exec(sql);
   }
 
@@ -138,7 +139,7 @@ export class SQLiteAdapter implements IDatabaseAdapter {
    * 获取适配器名称
    */
   getName(): string {
-    return 'SQLite';
+    return DB_ADAPTER_NAMES.SQLITE;
   }
 
   /**
@@ -147,7 +148,7 @@ export class SQLiteAdapter implements IDatabaseAdapter {
   private handleError(error: unknown): Error {
     const err = error as { code?: string; message?: string };
     if (err.code === 'SQLITE_CONSTRAINT_UNIQUE') {
-      return new Error('ER_DUP_ENTRY');
+      return new Error(DB_ERRORS.DUPLICATE_ENTRY);
     }
     return error as Error;
   }

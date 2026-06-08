@@ -13,6 +13,9 @@ logs/
 .vscode/
 .idea/
 
+# Trae IDE
+.trae/
+
 # 操作系统
 .DS_Store
 Thumbs.db

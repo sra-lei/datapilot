@@ -240,12 +240,14 @@ export async function changePassword(req: Request, res: Response): Promise<void>
  */
 export async function deleteUser(req: Request, res: Response): Promise<void> {
   const traceId = generateTraceId();
-  const userId = parseInt(req.params.id);
+  const idParam = req.params.id;
+  const userId = parseInt(Array.isArray(idParam) ? idParam[0] : idParam);
 
   if (isNaN(userId)) {
     logWarn(OPERATIONS.USER_DELETE, '无效的用户ID', {
       traceId,
-      userId: req.params.id,
+      userId: undefined,
+      idParam,
       reason: '参数错误',
     });
     error(res, ErrorCode.BAD_REQUEST, '无效的用户ID');

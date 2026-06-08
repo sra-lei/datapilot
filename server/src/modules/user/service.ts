@@ -130,6 +130,48 @@ export async function login(params: LoginParams): Promise<ServiceResult<UserInfo
 }
 
 /**
+ * 修改密码
+ */
+export async function changePassword(params: ChangePasswordParams): Promise<ServiceResult> {
+  try {
+    const { username, oldPassword, newPassword } = params;
+    const db = getDb();
+
+    // 验证旧密码
+    const result = await db.query(
+      'SELECT id FROM users WHERE username = ? AND password = ?',
+      [username, oldPassword],
+    );
+
+    if (!result.rows || result.rows.length === 0) {
+      return {
+        success: false,
+        error: {
+          code: ErrorCode.UNAUTHORIZED,
+          message: MESSAGES.OLD_PASSWORD_ERROR,
+        },
+      };
+    }
+
+    // 更新密码
+    await db.update(
+      'UPDATE users SET password = ? WHERE username = ?',
+      [newPassword, username],
+    );
+
+    return { success: true };
+  } catch (_err: unknown) {
+    return {
+      success: false,
+      error: {
+        code: ErrorCode.INTERNAL_ERROR,
+        message: MESSAGES.CHANGE_PASSWORD_FAILED,
+      },
+    };
+  }
+}
+
+/**
  * 修改密码（管理员强制修改，不需要原密码）
  */
 export async function updatePassword(params: { username: string; newPassword: string }): Promise<ServiceResult> {

@@ -4,33 +4,7 @@
  */
 
 import winston from 'winston';
-
-// 操作类型 - 用于日志分类
-export const OPERATIONS = {
-  // 用户操作
-  USER_REGISTER: 'USER_REGISTER',
-  USER_LOGIN: 'USER_LOGIN',
-  USER_LOGOUT: 'USER_LOGOUT',
-  USER_CHANGE_PASSWORD: 'USER_CHANGE_PASSWORD',
-  USER_GET_INFO: 'USER_GET_INFO',
-  USER_UPDATE_INFO: 'USER_UPDATE_INFO',
-
-  // 数据库操作
-  DB_INIT: 'DB_INIT',
-  DB_QUERY: 'DB_QUERY',
-  DB_INSERT: 'DB_INSERT',
-  DB_UPDATE: 'DB_UPDATE',
-  DB_DELETE: 'DB_DELETE',
-
-  // 系统操作
-  SERVER_START: 'SERVER_START',
-  SERVER_STOP: 'SERVER_STOP',
-  SERVER_ERROR: 'SERVER_ERROR',
-
-  // 通用操作
-  REQUEST: 'REQUEST',
-  VALIDATION: 'VALIDATION',
-} as const;
+import { LOG_FILES, LOG_CONFIG, LOG_OPERATIONS } from '../constants/logConstants';
 
 // 日志上下文接口
 export interface LogContext {
@@ -42,10 +16,10 @@ export interface LogContext {
 
 // 创建日志实例
 const logger = winston.createLogger({
-  level: process.env.LOG_LEVEL || 'info',
+  level: process.env.LOG_LEVEL || LOG_CONFIG.DEFAULT_LEVEL,
   format: winston.format.combine(
     winston.format.timestamp({
-      format: 'YYYY-MM-DD HH:mm:ss.SSS',
+      format: LOG_CONFIG.TIMESTAMP_FORMAT,
     }),
     winston.format.errors({ stack: true }),
     winston.format.splat(),
@@ -89,25 +63,25 @@ const logger = winston.createLogger({
     }),
     // 文件输出 - 所有日志
     new winston.transports.File({
-      filename: 'logs/combined.log',
-      maxsize: 5242880,
-      maxFiles: 10,
+      filename: LOG_FILES.COMBINED,
+      maxsize: LOG_CONFIG.MAX_SIZE,
+      maxFiles: LOG_CONFIG.MAX_FILES,
       tailable: true,
     }),
     // 文件输出 - 错误日志
     new winston.transports.File({
-      filename: 'logs/error.log',
+      filename: LOG_FILES.ERROR,
       level: 'error',
-      maxsize: 5242880,
-      maxFiles: 10,
+      maxsize: LOG_CONFIG.MAX_SIZE,
+      maxFiles: LOG_CONFIG.MAX_FILES,
       tailable: true,
     }),
     // 文件输出 - 用户操作日志
     new winston.transports.File({
-      filename: 'logs/user.log',
+      filename: LOG_FILES.USER,
       level: 'info',
-      maxsize: 5242880,
-      maxFiles: 10,
+      maxsize: LOG_CONFIG.MAX_SIZE,
+      maxFiles: LOG_CONFIG.MAX_FILES,
       tailable: true,
       format: winston.format.combine(
         winston.format.timestamp(),
