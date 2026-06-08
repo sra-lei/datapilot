@@ -13,6 +13,7 @@ export const MESSAGES = {
   USER_ALREADY_EXISTS: '用户名已存在',
   PASSWORD_ERROR: '用户名或密码错误',
   OLD_PASSWORD_ERROR: '旧密码错误',
+  GET_PERMISSION_FAILED: '获取用户权限失败，请稍后重试',
   REGISTER_SUCCESS: '注册成功',
   LOGIN_SUCCESS: '登录成功',
   CHANGE_PASSWORD_SUCCESS: '密码修改成功',

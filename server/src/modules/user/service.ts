@@ -100,9 +100,14 @@ export async function login(params: LoginParams): Promise<ServiceResult<UserInfo
       roles = permResult.data.roles.map(r => r.name);
       permissions = permResult.data.permissions;
     } else {
-      // 如果没有获取到权限，默认赋予管理员权限
-      roles = ['admin'];
-      permissions = ['*:*'];
+      // 获取权限失败时返回登录错误，避免默认赋予高权限
+      return {
+        success: false,
+        error: {
+          code: ErrorCode.INTERNAL_ERROR,
+          message: MESSAGES.GET_PERMISSION_FAILED,
+        },
+      };
     }
 
     return {
