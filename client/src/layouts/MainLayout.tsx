@@ -24,33 +24,44 @@ function MainLayout() {
   const navigate = useNavigate();
   const { can } = usePermission();
 
-  const menuItems = [
+  const allMenuItems = [
     {
       key: '/dashboard',
       icon: <DashboardOutlined />,
       label: '仪表盘',
+      permission: null, // 所有人可见
     },
     {
       key: '/database',
       icon: <FileTextOutlined />,
       label: '数据库管理',
+      permission: null, // 所有人可见
     },
     {
       key: '/users',
       icon: <UserOutlined />,
       label: '用户管理',
+      permission: { action: 'view', subject: 'User' },
     },
     {
       key: '/permissions',
       icon: <SafetyCertificateOutlined />,
       label: '权限管理',
+      permission: { action: 'view', subject: 'Role' },
     },
     {
       key: '/settings',
       icon: <SettingOutlined />,
       label: '系统设置',
+      permission: { action: 'view', subject: 'Settings' },
     },
   ];
+
+  // 根据权限过滤菜单
+  const menuItems = allMenuItems.filter((item) => {
+    if (!item.permission) return true;
+    return can(item.permission.action, item.permission.subject);
+  });
 
   const handleMenuClick = ({ key }: { key: string }) => {
     navigate(key);
