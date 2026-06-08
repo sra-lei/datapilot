@@ -14,11 +14,19 @@ export enum ErrorCode {
   SERVICE_UNAVAILABLE = 503,
 }
 
+// 用户状态
+export enum UserStatus {
+  ACTIVE = 'active',      // 启用
+  INACTIVE = 'inactive',  // 停用
+  DELETED = 'deleted',    // 已删除
+}
+
 // 用户操作类型
 export enum UserOperation {
   USER_REGISTER = 'USER_REGISTER',
   USER_LOGIN = 'USER_LOGIN',
   USER_CHANGE_PASSWORD = 'USER_CHANGE_PASSWORD',
+  USER_UPDATE_STATUS = 'USER_UPDATE_STATUS',
 }
 
 // 用户消息
@@ -29,12 +37,16 @@ export const UserMessages = {
   USER_ALREADY_EXISTS: '用户名已存在',
   PASSWORD_ERROR: '用户名或密码错误',
   OLD_PASSWORD_ERROR: '旧密码错误',
+  USER_INACTIVE: '用户已被停用',
+  USER_DELETED: '用户已被删除',
   REGISTER_SUCCESS: '注册成功',
   LOGIN_SUCCESS: '登录成功',
   CHANGE_PASSWORD_SUCCESS: '密码修改成功',
+  UPDATE_STATUS_SUCCESS: '状态更新成功',
   REGISTER_FAILED: '注册失败',
   LOGIN_FAILED: '登录失败',
   CHANGE_PASSWORD_FAILED: '修改密码失败',
+  UPDATE_STATUS_FAILED: '更新状态失败',
 } as const;
 
 // 用户注册参数
@@ -58,11 +70,18 @@ export interface ChangePasswordParams {
   newPassword: string;
 }
 
+// 更新用户状态参数
+export interface UpdateUserStatusParams {
+  userId: number;
+  status: UserStatus;
+}
+
 // 用户信息
 export interface UserInfo {
   id: number;
   username: string;
   email: string | null;
+  status: UserStatus;
 }
 
 // 服务层返回结果

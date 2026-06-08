@@ -3,24 +3,6 @@
  * 提供结构化日志记录方法，便于搜索和排查问题
  */
 import winston from 'winston';
-export declare const OPERATIONS: {
-    readonly USER_REGISTER: "USER_REGISTER";
-    readonly USER_LOGIN: "USER_LOGIN";
-    readonly USER_LOGOUT: "USER_LOGOUT";
-    readonly USER_CHANGE_PASSWORD: "USER_CHANGE_PASSWORD";
-    readonly USER_GET_INFO: "USER_GET_INFO";
-    readonly USER_UPDATE_INFO: "USER_UPDATE_INFO";
-    readonly DB_INIT: "DB_INIT";
-    readonly DB_QUERY: "DB_QUERY";
-    readonly DB_INSERT: "DB_INSERT";
-    readonly DB_UPDATE: "DB_UPDATE";
-    readonly DB_DELETE: "DB_DELETE";
-    readonly SERVER_START: "SERVER_START";
-    readonly SERVER_STOP: "SERVER_STOP";
-    readonly SERVER_ERROR: "SERVER_ERROR";
-    readonly REQUEST: "REQUEST";
-    readonly VALIDATION: "VALIDATION";
-};
 export interface LogContext {
     operation?: string;
     userId?: number;

@@ -8,7 +8,7 @@ import { success, error } from '../../utils/response';
 import { generateTraceId, logUserOperation, logWarn } from '../../utils/logUtils';
 import { ErrorCode, MESSAGES, OPERATIONS } from './constants';
 import * as userService from './service';
-import { RegisterParams, LoginParams, ChangePasswordParams } from './types';
+import { RegisterParams, LoginParams, ChangePasswordParams, UserStatus } from './types';
 import { permissionService } from '../permission';
 
 /**
@@ -299,4 +299,91 @@ export async function deleteUser(req: Request, res: Response): Promise<void> {
   });
 
   success(res, null, MESSAGES.DELETE_SUCCESS);
+}
+
+/**
+ * 更新用户状态
+ */
+export async function updateUserStatus(req: Request, res: Response): Promise<void> {
+  const traceId = generateTraceId();
+  const { userId, status } = req.body as { userId: number; status: UserStatus };
+
+  if (!userId || !status) {
+    logWarn(OPERATIONS.USER_UPDATE_STATUS, MESSAGES.ALL_FIELDS_REQUIRED, {
+      traceId,
+      reason: '缺少必需参数',
+    });
+    error(res, ErrorCode.BAD_REQUEST, MESSAGES.ALL_FIELDS_REQUIRED);
+    return;
+  }
+
+  // 验证状态值
+  if (!Object.values(UserStatus).includes(status)) {
+    logWarn(OPERATIONS.USER_UPDATE_STATUS, '无效的状态值', {
+      traceId,
+      userId,
+      status,
+      reason: '状态值无效',
+    });
+    error(res, ErrorCode.BAD_REQUEST, '无效的状态值');
+    return;
+  }
+
+  // 需要管理员权限
+  const operatorId = req.headers['x-user-id'];
+
+  if (!operatorId) {
+    logWarn(OPERATIONS.USER_UPDATE_STATUS, '未登录用户尝试更新用户状态', {
+      traceId,
+      userId,
+      reason: '未登录',
+    });
+    error(res, ErrorCode.UNAUTHORIZED, '请先登录');
+    return;
+  }
+
+  try {
+    const hasPermission = await permissionService.hasPermission(
+      parseInt(operatorId as string),
+      'user:update'
+    );
+
+    if (!hasPermission) {
+      logWarn(OPERATIONS.USER_UPDATE_STATUS, '没有权限更新用户状态', {
+        traceId,
+        userId,
+        reason: '权限不足',
+      });
+      error(res, ErrorCode.FORBIDDEN, '没有权限执行此操作');
+      return;
+    }
+  } catch (permError) {
+    logWarn(OPERATIONS.USER_UPDATE_STATUS, '权限验证失败', {
+      traceId,
+      userId,
+      reason: '权限验证异常',
+    });
+    error(res, ErrorCode.INTERNAL_ERROR, '权限验证失败');
+    return;
+  }
+
+  const result = await userService.updateUserStatus({ userId, status });
+
+  if (!result.success) {
+    logWarn(OPERATIONS.USER_UPDATE_STATUS, result.error!.message, {
+      traceId,
+      userId,
+    });
+    error(res, result.error!.code, result.error!.message);
+    return;
+  }
+
+  logUserOperation(OPERATIONS.USER_UPDATE_STATUS, MESSAGES.UPDATE_STATUS_SUCCESS, {
+    traceId,
+    userId,
+    operatorId,
+    newStatus: status,
+  });
+
+  success(res, null, MESSAGES.UPDATE_STATUS_SUCCESS);
 }

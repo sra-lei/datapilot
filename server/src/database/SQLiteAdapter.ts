@@ -41,17 +41,25 @@ export class SQLiteAdapter implements IDatabaseAdapter {
   private initTables(): void {
     if (!this.db) throw new Error(DB_ERRORS.NOT_INITIALIZED);
 
-    // 创建用户表
+    // 创建用户表（包含状态字段）
     this.db.exec(`
       CREATE TABLE IF NOT EXISTS users (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         username TEXT UNIQUE NOT NULL,
         password TEXT NOT NULL,
         email TEXT,
+        status TEXT DEFAULT 'active' CHECK(status IN ('active', 'inactive', 'deleted')),
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
       )
     `);
+
+    // 检查并添加状态字段（兼容旧数据库）
+    try {
+      this.db.exec(`ALTER TABLE users ADD COLUMN status TEXT DEFAULT 'active'`);
+    } catch (error) {
+      // 字段已存在，忽略错误
+    }
   }
 
   /**

@@ -17,26 +17,7 @@ var __exportStar = (this && this.__exportStar) || function(m, exports) {
     for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.SYSTEM_OPERATIONS = exports.SYSTEM_MESSAGES = void 0;
-__exportStar(require("./userConstants"), exports);
-exports.SYSTEM_MESSAGES = {
-    DB_INIT_SUCCESS: '数据库初始化成功',
-    DB_INIT_FAILED: '数据库初始化失败',
-    DB_CONNECTION_FAILED: '数据库连接失败',
-    SERVER_START_SUCCESS: '服务器启动成功',
-    SERVER_START_FAILED: '服务器启动失败',
-    SERVER_STOP_SUCCESS: '服务器停止成功',
-};
-exports.SYSTEM_OPERATIONS = {
-    DB_INIT: 'DB_INIT',
-    DB_QUERY: 'DB_QUERY',
-    DB_INSERT: 'DB_INSERT',
-    DB_UPDATE: 'DB_UPDATE',
-    DB_DELETE: 'DB_DELETE',
-    SERVER_START: 'SERVER_START',
-    SERVER_STOP: 'SERVER_STOP',
-    SERVER_ERROR: 'SERVER_ERROR',
-    REQUEST: 'REQUEST',
-    VALIDATION: 'VALIDATION',
-};
+__exportStar(require("./systemConstants"), exports);
+__exportStar(require("./logConstants"), exports);
+__exportStar(require("./dbConstants"), exports);
 //# sourceMappingURL=index.js.map

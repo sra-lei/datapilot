@@ -3,7 +3,7 @@
  */
 
 import { request } from '../utils/request';
-import { UserInfo, LoginParams, RegisterParams, ChangePasswordParams, ApiResponse } from '../types';
+import { UserInfo, LoginParams, RegisterParams, ChangePasswordParams, ApiResponse, UserStatus, UpdateUserStatusParams } from '../types';
 
 /**
  * 用户登录
@@ -36,11 +36,21 @@ export async function changePassword(params: ChangePasswordParams): Promise<ApiR
 }
 
 /**
- * 删除用户
+ * 删除用户（软删除，改为停用状态）
  */
 export async function deleteUser(userId: number): Promise<ApiResponse> {
   return request(`/user/${userId}`, {
     method: 'DELETE',
+  });
+}
+
+/**
+ * 更新用户状态
+ */
+export async function updateUserStatus(params: UpdateUserStatusParams): Promise<ApiResponse> {
+  return request('/user/status', {
+    method: 'PUT',
+    body: JSON.stringify(params),
   });
 }
 

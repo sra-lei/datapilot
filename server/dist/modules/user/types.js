@@ -3,7 +3,7 @@
  * 用户模块类型定义
  */
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.UserMessages = exports.UserOperation = exports.ErrorCode = void 0;
+exports.UserMessages = exports.UserOperation = exports.UserStatus = exports.ErrorCode = void 0;
 // 错误码
 var ErrorCode;
 (function (ErrorCode) {
@@ -16,12 +16,20 @@ var ErrorCode;
     ErrorCode[ErrorCode["INTERNAL_ERROR"] = 500] = "INTERNAL_ERROR";
     ErrorCode[ErrorCode["SERVICE_UNAVAILABLE"] = 503] = "SERVICE_UNAVAILABLE";
 })(ErrorCode || (exports.ErrorCode = ErrorCode = {}));
+// 用户状态
+var UserStatus;
+(function (UserStatus) {
+    UserStatus["ACTIVE"] = "active";
+    UserStatus["INACTIVE"] = "inactive";
+    UserStatus["DELETED"] = "deleted";
+})(UserStatus || (exports.UserStatus = UserStatus = {}));
 // 用户操作类型
 var UserOperation;
 (function (UserOperation) {
     UserOperation["USER_REGISTER"] = "USER_REGISTER";
     UserOperation["USER_LOGIN"] = "USER_LOGIN";
     UserOperation["USER_CHANGE_PASSWORD"] = "USER_CHANGE_PASSWORD";
+    UserOperation["USER_UPDATE_STATUS"] = "USER_UPDATE_STATUS";
 })(UserOperation || (exports.UserOperation = UserOperation = {}));
 // 用户消息
 exports.UserMessages = {
@@ -31,11 +39,15 @@ exports.UserMessages = {
     USER_ALREADY_EXISTS: '用户名已存在',
     PASSWORD_ERROR: '用户名或密码错误',
     OLD_PASSWORD_ERROR: '旧密码错误',
+    USER_INACTIVE: '用户已被停用',
+    USER_DELETED: '用户已被删除',
     REGISTER_SUCCESS: '注册成功',
     LOGIN_SUCCESS: '登录成功',
     CHANGE_PASSWORD_SUCCESS: '密码修改成功',
+    UPDATE_STATUS_SUCCESS: '状态更新成功',
     REGISTER_FAILED: '注册失败',
     LOGIN_FAILED: '登录失败',
     CHANGE_PASSWORD_FAILED: '修改密码失败',
+    UPDATE_STATUS_FAILED: '更新状态失败',
 };
 //# sourceMappingURL=types.js.map

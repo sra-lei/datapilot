@@ -7,7 +7,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.logger = exports.OPERATIONS = void 0;
+exports.logger = void 0;
 exports.generateTraceId = generateTraceId;
 exports.logUserOperation = logUserOperation;
 exports.logError = logError;
@@ -16,34 +16,12 @@ exports.logDebug = logDebug;
 exports.logDatabase = logDatabase;
 exports.logSystem = logSystem;
 const winston_1 = __importDefault(require("winston"));
-// 操作类型 - 用于日志分类
-exports.OPERATIONS = {
-    // 用户操作
-    USER_REGISTER: 'USER_REGISTER',
-    USER_LOGIN: 'USER_LOGIN',
-    USER_LOGOUT: 'USER_LOGOUT',
-    USER_CHANGE_PASSWORD: 'USER_CHANGE_PASSWORD',
-    USER_GET_INFO: 'USER_GET_INFO',
-    USER_UPDATE_INFO: 'USER_UPDATE_INFO',
-    // 数据库操作
-    DB_INIT: 'DB_INIT',
-    DB_QUERY: 'DB_QUERY',
-    DB_INSERT: 'DB_INSERT',
-    DB_UPDATE: 'DB_UPDATE',
-    DB_DELETE: 'DB_DELETE',
-    // 系统操作
-    SERVER_START: 'SERVER_START',
-    SERVER_STOP: 'SERVER_STOP',
-    SERVER_ERROR: 'SERVER_ERROR',
-    // 通用操作
-    REQUEST: 'REQUEST',
-    VALIDATION: 'VALIDATION',
-};
+const logConstants_1 = require("../constants/logConstants");
 // 创建日志实例
 const logger = winston_1.default.createLogger({
-    level: process.env.LOG_LEVEL || 'info',
+    level: process.env.LOG_LEVEL || logConstants_1.LOG_CONFIG.DEFAULT_LEVEL,
     format: winston_1.default.format.combine(winston_1.default.format.timestamp({
-        format: 'YYYY-MM-DD HH:mm:ss.SSS',
+        format: logConstants_1.LOG_CONFIG.TIMESTAMP_FORMAT,
     }), winston_1.default.format.errors({ stack: true }), winston_1.default.format.splat(), winston_1.default.format.json()),
     defaultMeta: { service: 'trae-server' },
     transports: [
@@ -77,25 +55,25 @@ const logger = winston_1.default.createLogger({
         }),
         // 文件输出 - 所有日志
         new winston_1.default.transports.File({
-            filename: 'logs/combined.log',
-            maxsize: 5242880,
-            maxFiles: 10,
+            filename: logConstants_1.LOG_FILES.COMBINED,
+            maxsize: logConstants_1.LOG_CONFIG.MAX_SIZE,
+            maxFiles: logConstants_1.LOG_CONFIG.MAX_FILES,
             tailable: true,
         }),
         // 文件输出 - 错误日志
         new winston_1.default.transports.File({
-            filename: 'logs/error.log',
+            filename: logConstants_1.LOG_FILES.ERROR,
             level: 'error',
-            maxsize: 5242880,
-            maxFiles: 10,
+            maxsize: logConstants_1.LOG_CONFIG.MAX_SIZE,
+            maxFiles: logConstants_1.LOG_CONFIG.MAX_FILES,
             tailable: true,
         }),
         // 文件输出 - 用户操作日志
         new winston_1.default.transports.File({
-            filename: 'logs/user.log',
+            filename: logConstants_1.LOG_FILES.USER,
             level: 'info',
-            maxsize: 5242880,
-            maxFiles: 10,
+            maxsize: logConstants_1.LOG_CONFIG.MAX_SIZE,
+            maxFiles: logConstants_1.LOG_CONFIG.MAX_FILES,
             tailable: true,
             format: winston_1.default.format.combine(winston_1.default.format.timestamp(), winston_1.default.format.json()),
         }),

@@ -4,7 +4,7 @@
  */
 
 import { DatabaseFactory } from '../../database';
-import { ErrorCode, UserInfo, ServiceResult } from './types';
+import { ErrorCode, UserStatus, UserInfo, ServiceResult } from './types';
 import { MESSAGES } from './constants';
 import { RegisterParams, LoginParams, ChangePasswordParams } from './types';
 import { permissionService } from '../permission';
@@ -25,8 +25,8 @@ export async function register(params: RegisterParams): Promise<ServiceResult<Us
     const db = getDb();
 
     const result = await db.insert(
-      'INSERT INTO users (username, password, email) VALUES (?, ?, ?)',
-      [username, password, email || null],
+      'INSERT INTO users (username, password, email, status) VALUES (?, ?, ?, ?)',
+      [username, password, email || null, UserStatus.ACTIVE],
     );
 
     const userId = result.insertId!;
@@ -42,6 +42,7 @@ export async function register(params: RegisterParams): Promise<ServiceResult<Us
         id: userId,
         username,
         email: email || null,
+        status: UserStatus.ACTIVE,
       },
     };
   } catch (err: unknown) {
@@ -75,7 +76,7 @@ export async function login(params: LoginParams): Promise<ServiceResult<UserInfo
     const db = getDb();
 
     const result = await db.query(
-      'SELECT id, username, email FROM users WHERE username = ? AND password = ?',
+      'SELECT id, username, email, status FROM users WHERE username = ? AND password = ?',
       [username, password],
     );
 
@@ -90,6 +91,27 @@ export async function login(params: LoginParams): Promise<ServiceResult<UserInfo
     }
 
     const user = result.rows[0] as unknown as UserInfo;
+    
+    // 检查用户状态
+    if (user.status === UserStatus.INACTIVE) {
+      return {
+        success: false,
+        error: {
+          code: ErrorCode.FORBIDDEN,
+          message: MESSAGES.USER_INACTIVE,
+        },
+      };
+    }
+
+    if (user.status === UserStatus.DELETED) {
+      return {
+        success: false,
+        error: {
+          code: ErrorCode.FORBIDDEN,
+          message: MESSAGES.USER_DELETED,
+        },
+      };
+    }
     
     // 获取用户的角色和权限
     const permResult = await permissionService.getUserPermissions(user.id);
@@ -215,7 +237,7 @@ export async function getUserById(userId: number): Promise<ServiceResult<UserInf
     const db = getDb();
 
     const result = await db.query(
-      'SELECT id, username, email FROM users WHERE id = ?',
+      'SELECT id, username, email, status FROM users WHERE id = ?',
       [userId],
     );
 
@@ -245,17 +267,103 @@ export async function getUserById(userId: number): Promise<ServiceResult<UserInf
 }
 
 /**
- * 删除用户
+ * 更新用户状态
+ */
+export async function updateUserStatus(params: { userId: number; status: UserStatus }): Promise<ServiceResult> {
+  try {
+    const { userId, status } = params;
+    const db = getDb();
+
+    // 检查用户是否存在
+    const userCheck = await db.query('SELECT id, username FROM users WHERE id = ?', [userId]);
+    if (!userCheck.rows || userCheck.rows.length === 0) {
+      return {
+        success: false,
+        error: {
+          code: ErrorCode.NOT_FOUND,
+          message: MESSAGES.USER_NOT_FOUND,
+        },
+      };
+    }
+
+    const username = (userCheck.rows[0] as any).username;
+
+    // 不能修改管理员状态
+    if (username === 'Sra' || username === 'admin') {
+      return {
+        success: false,
+        error: {
+          code: ErrorCode.FORBIDDEN,
+          message: '不能修改管理员用户的状态',
+        },
+      };
+    }
+
+    // 更新用户状态
+    const result = await db.update(
+      'UPDATE users SET status = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
+      [status, userId],
+    );
+
+    if (result.affectedRows === 0) {
+      return {
+        success: false,
+        error: {
+          code: ErrorCode.NOT_FOUND,
+          message: MESSAGES.USER_NOT_FOUND,
+        },
+      };
+    }
+
+    return { success: true };
+  } catch (_err: unknown) {
+    return {
+      success: false,
+      error: {
+        code: ErrorCode.INTERNAL_ERROR,
+        message: MESSAGES.UPDATE_STATUS_FAILED,
+      },
+    };
+  }
+}
+
+/**
+ * 删除用户（改为停用状态）
  */
 export async function deleteUser(userId: number): Promise<ServiceResult> {
   try {
     const db = getDb();
 
-    // 删除用户的角色关联
-    await db.delete('DELETE FROM user_roles WHERE user_id = ?', [userId]);
+    // 检查用户是否存在
+    const userCheck = await db.query('SELECT id, username FROM users WHERE id = ?', [userId]);
+    if (!userCheck.rows || userCheck.rows.length === 0) {
+      return {
+        success: false,
+        error: {
+          code: ErrorCode.NOT_FOUND,
+          message: MESSAGES.USER_NOT_FOUND,
+        },
+      };
+    }
 
-    // 删除用户
-    const result = await db.delete('DELETE FROM users WHERE id = ?', [userId]);
+    const username = (userCheck.rows[0] as any).username;
+
+    // 不能删除管理员
+    if (username === 'Sra' || username === 'admin') {
+      return {
+        success: false,
+        error: {
+          code: ErrorCode.FORBIDDEN,
+          message: '不能删除管理员用户',
+        },
+      };
+    }
+
+    // 将用户状态改为 deleted（软删除）
+    const result = await db.update(
+      'UPDATE users SET status = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
+      [UserStatus.DELETED, userId],
+    );
 
     if (result.affectedRows === 0) {
       return {

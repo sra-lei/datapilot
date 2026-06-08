@@ -20,7 +20,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.changePasswordController = exports.loginController = exports.registerController = exports.changePassword = exports.login = exports.register = exports.router = void 0;
+exports.deleteUserController = exports.updateUserStatusController = exports.changePasswordController = exports.loginController = exports.registerController = exports.deleteUser = exports.updateUserStatus = exports.getUserById = exports.updatePassword = exports.changePassword = exports.login = exports.register = exports.router = void 0;
 var router_1 = require("./router");
 Object.defineProperty(exports, "router", { enumerable: true, get: function () { return __importDefault(router_1).default; } });
 __exportStar(require("./constants"), exports);
@@ -29,8 +29,14 @@ var service_1 = require("./service");
 Object.defineProperty(exports, "register", { enumerable: true, get: function () { return service_1.register; } });
 Object.defineProperty(exports, "login", { enumerable: true, get: function () { return service_1.login; } });
 Object.defineProperty(exports, "changePassword", { enumerable: true, get: function () { return service_1.changePassword; } });
+Object.defineProperty(exports, "updatePassword", { enumerable: true, get: function () { return service_1.updatePassword; } });
+Object.defineProperty(exports, "getUserById", { enumerable: true, get: function () { return service_1.getUserById; } });
+Object.defineProperty(exports, "updateUserStatus", { enumerable: true, get: function () { return service_1.updateUserStatus; } });
+Object.defineProperty(exports, "deleteUser", { enumerable: true, get: function () { return service_1.deleteUser; } });
 var controller_1 = require("./controller");
 Object.defineProperty(exports, "registerController", { enumerable: true, get: function () { return controller_1.register; } });
 Object.defineProperty(exports, "loginController", { enumerable: true, get: function () { return controller_1.login; } });
 Object.defineProperty(exports, "changePasswordController", { enumerable: true, get: function () { return controller_1.changePassword; } });
+Object.defineProperty(exports, "updateUserStatusController", { enumerable: true, get: function () { return controller_1.updateUserStatus; } });
+Object.defineProperty(exports, "deleteUserController", { enumerable: true, get: function () { return controller_1.deleteUser; } });
 //# sourceMappingURL=index.js.map

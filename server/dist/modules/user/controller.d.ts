@@ -15,4 +15,12 @@ export declare function login(req: Request, res: Response): Promise<void>;
  * 修改密码
  */
 export declare function changePassword(req: Request, res: Response): Promise<void>;
+/**
+ * 删除用户
+ */
+export declare function deleteUser(req: Request, res: Response): Promise<void>;
+/**
+ * 更新用户状态
+ */
+export declare function updateUserStatus(req: Request, res: Response): Promise<void>;
 //# sourceMappingURL=controller.d.ts.map

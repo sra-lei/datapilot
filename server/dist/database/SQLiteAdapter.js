@@ -42,8 +42,9 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.SQLiteAdapter = void 0;
 const better_sqlite3_1 = __importDefault(require("better-sqlite3"));
+const constants_1 = require("../constants");
 class SQLiteAdapter {
-    constructor(dbPath = './data/trae.db') {
+    constructor(dbPath = constants_1.DB_CONFIG.DEFAULT_DB_PATH) {
         this.db = null;
         this.dbPath = dbPath;
     }
@@ -59,7 +60,7 @@ class SQLiteAdapter {
             fs.mkdirSync(dir, { recursive: true });
         }
         this.db = new better_sqlite3_1.default(this.dbPath);
-        this.db.pragma('journal_mode = WAL');
+        this.db.pragma(`journal_mode = ${constants_1.DB_CONFIG.JOURNAL_MODE}`);
         // 初始化表结构
         this.initTables();
     }
@@ -68,25 +69,33 @@ class SQLiteAdapter {
      */
     initTables() {
         if (!this.db)
-            throw new Error('Database not initialized');
-        // 创建用户表
+            throw new Error(constants_1.DB_ERRORS.NOT_INITIALIZED);
+        // 创建用户表（包含状态字段）
         this.db.exec(`
       CREATE TABLE IF NOT EXISTS users (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         username TEXT UNIQUE NOT NULL,
         password TEXT NOT NULL,
         email TEXT,
+        status TEXT DEFAULT 'active' CHECK(status IN ('active', 'inactive', 'deleted')),
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
       )
     `);
+        // 检查并添加状态字段（兼容旧数据库）
+        try {
+            this.db.exec(`ALTER TABLE users ADD COLUMN status TEXT DEFAULT 'active'`);
+        }
+        catch (error) {
+            // 字段已存在，忽略错误
+        }
     }
     /**
      * 执行查询
      */
     async query(sql, params) {
         if (!this.db)
-            throw new Error('Database not initialized');
+            throw new Error(constants_1.DB_ERRORS.NOT_INITIALIZED);
         try {
             const stmt = this.db.prepare(sql);
             const rows = (params ? stmt.all(...params) : stmt.all());
@@ -101,7 +110,7 @@ class SQLiteAdapter {
      */
     async insert(sql, params) {
         if (!this.db)
-            throw new Error('Database not initialized');
+            throw new Error(constants_1.DB_ERRORS.NOT_INITIALIZED);
         try {
             const stmt = this.db.prepare(sql);
             const result = params ? stmt.run(...params) : stmt.run();
@@ -119,7 +128,7 @@ class SQLiteAdapter {
      */
     async update(sql, params) {
         if (!this.db)
-            throw new Error('Database not initialized');
+            throw new Error(constants_1.DB_ERRORS.NOT_INITIALIZED);
         try {
             const stmt = this.db.prepare(sql);
             const result = params ? stmt.run(...params) : stmt.run();
@@ -134,7 +143,7 @@ class SQLiteAdapter {
      */
     async delete(sql, params) {
         if (!this.db)
-            throw new Error('Database not initialized');
+            throw new Error(constants_1.DB_ERRORS.NOT_INITIALIZED);
         try {
             const stmt = this.db.prepare(sql);
             const result = params ? stmt.run(...params) : stmt.run();
@@ -149,7 +158,7 @@ class SQLiteAdapter {
      */
     async run(sql) {
         if (!this.db)
-            throw new Error('Database not initialized');
+            throw new Error(constants_1.DB_ERRORS.NOT_INITIALIZED);
         this.db.exec(sql);
     }
     /**
@@ -165,7 +174,7 @@ class SQLiteAdapter {
      * 获取适配器名称
      */
     getName() {
-        return 'SQLite';
+        return constants_1.DB_ADAPTER_NAMES.SQLITE;
     }
     /**
      * 统一错误处理
@@ -173,7 +182,7 @@ class SQLiteAdapter {
     handleError(error) {
         const err = error;
         if (err.code === 'SQLITE_CONSTRAINT_UNIQUE') {
-            return new Error('ER_DUP_ENTRY');
+            return new Error(constants_1.DB_ERRORS.DUPLICATE_ENTRY);
         }
         return error;
     }

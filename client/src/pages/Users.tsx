@@ -15,6 +15,7 @@ import {
   Tag,
   Select,
   Popconfirm,
+  Switch,
 } from 'antd';
 import {
   UserOutlined,
@@ -25,12 +26,14 @@ import {
 } from '@ant-design/icons';
 import { usePermission } from '../contexts/PermissionContext';
 import { getAllRoles, Role } from '../services/permission';
-import { register, deleteUser as deleteUserApi, changePassword } from '../services/user';
+import { register, deleteUser as deleteUserApi, changePassword, updateUserStatus } from '../services/user';
+import { UserStatus } from '../types';
 
 interface User {
   id: number;
   username: string;
   email: string | null;
+  status: UserStatus;
   created_at: string;
 }
 
@@ -170,6 +173,23 @@ function UserManagement() {
     }
   };
 
+  // 切换用户状态
+  const handleToggleStatus = async (userId: number, username: string, checked: boolean) => {
+    try {
+      const newStatus = checked ? UserStatus.ACTIVE : UserStatus.INACTIVE;
+      const result = await updateUserStatus({ userId, status: newStatus });
+
+      if (result.code === 200) {
+        message.success(`用户 ${username} ${checked ? '已启用' : '已停用'}`);
+        loadUsers();
+      } else {
+        message.error(result.message);
+      }
+    } catch (error) {
+      message.error('更新状态失败');
+    }
+  };
+
   // 判断用户是否为管理员
   const isAdmin = (username: string) => {
     return username === 'Sra' || username === 'admin';
@@ -193,6 +213,39 @@ function UserManagement() {
           {isAdmin(text) && <Tag color="red">管理员</Tag>}
         </Space>
       ),
+    },
+    {
+      title: '状态',
+      dataIndex: 'status',
+      key: 'status',
+      width: 120,
+      render: (status: UserStatus, record: User) => {
+        const isAdminUser = isAdmin(record.username);
+        
+        // 管理员用户状态不能修改
+        if (isAdminUser) {
+          return <Tag color="success">启用</Tag>;
+        }
+
+        // 只有管理员可以修改状态
+        if (!can('update', 'User')) {
+          return status === UserStatus.ACTIVE ? (
+            <Tag color="success">启用</Tag>
+          ) : (
+            <Tag color="error">停用</Tag>
+          );
+        }
+
+        return (
+          <Switch
+            checked={status === UserStatus.ACTIVE}
+            onChange={(checked) => handleToggleStatus(record.id, record.username, checked)}
+            checkedChildren="启用"
+            unCheckedChildren="停用"
+            size="small"
+          />
+        );
+      },
     },
     {
       title: '邮箱',
@@ -228,7 +281,7 @@ function UserManagement() {
               编辑
             </Button>
             <Popconfirm
-              title={`确定删除用户 ${record.username}？`}
+              title={`确定停用用户 ${record.username}？停用后用户将无法登录`}
               disabled={isAdminUser}
               okText="确定"
               cancelText="取消"
@@ -240,7 +293,7 @@ function UserManagement() {
                 icon={<DeleteOutlined />}
                 disabled={isAdminUser}
               >
-                {isAdminUser ? '不可删除' : '删除'}
+                {isAdminUser ? '不可操作' : '停用'}
               </Button>
             </Popconfirm>
           </Space>
