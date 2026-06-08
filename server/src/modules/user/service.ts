@@ -33,7 +33,7 @@ export async function register(params: RegisterParams): Promise<ServiceResult<Us
 
     // 如果指定了角色ID，则为用户分配角色
     if (roleId) {
-      await permissionService.assignRole(userId, roleId);
+      await permissionService.assignRole({ userId, roleId });
     }
 
     return {
