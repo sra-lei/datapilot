@@ -16,3 +16,15 @@ logs/
 # 操作系统
 .DS_Store
 Thumbs.db
+
+# 编译产物
+client/dist/
+server/dist/
+
+# 数据库文件
+server/data/*.db
+server/data/*.db-shm
+server/data/*.db-wal
+
+# 临时脚本
+server/assign-admin.js
