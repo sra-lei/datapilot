@@ -9,13 +9,14 @@ import { generateTraceId, logUserOperation, logWarn } from '../../utils/logUtils
 import { ErrorCode, MESSAGES, OPERATIONS } from './constants';
 import * as userService from './service';
 import { RegisterParams, LoginParams, ChangePasswordParams } from './types';
+import { permissionService } from '../permission';
 
 /**
  * 用户注册
  */
 export async function register(req: Request, res: Response): Promise<void> {
   const traceId = generateTraceId();
-  const { username, password, email } = req.body as RegisterParams;
+  const { username, password, email, roleId } = req.body as RegisterParams;
 
   if (!username || !password) {
     logWarn(OPERATIONS.USER_REGISTER, MESSAGES.ALL_FIELDS_REQUIRED, {
@@ -27,7 +28,47 @@ export async function register(req: Request, res: Response): Promise<void> {
     return;
   }
 
-  const result = await userService.register({ username, password, email });
+  // 如果指定了角色ID，需要验证当前用户是否有管理员权限
+  if (roleId) {
+    const userId = req.headers['x-user-id'];
+    
+    if (!userId) {
+      logWarn(OPERATIONS.USER_REGISTER, '未登录用户尝试指定角色注册', {
+        traceId,
+        username,
+        reason: '未登录',
+      });
+      error(res, ErrorCode.UNAUTHORIZED, '请先登录');
+      return;
+    }
+
+    try {
+      const hasPermission = await permissionService.hasPermission(
+        parseInt(userId as string),
+        'user:create'
+      );
+
+      if (!hasPermission) {
+        logWarn(OPERATIONS.USER_REGISTER, '没有权限创建用户', {
+          traceId,
+          username,
+          reason: '权限不足',
+        });
+        error(res, ErrorCode.FORBIDDEN, '没有权限执行此操作');
+        return;
+      }
+    } catch (permError) {
+      logWarn(OPERATIONS.USER_REGISTER, '权限验证失败', {
+        traceId,
+        username,
+        reason: '权限验证异常',
+      });
+      error(res, ErrorCode.INTERNAL_ERROR, '权限验证失败');
+      return;
+    }
+  }
+
+  const result = await userService.register({ username, password, email, roleId });
 
   if (!result.success) {
     logWarn(OPERATIONS.USER_REGISTER, result.error!.message, {
@@ -43,6 +84,7 @@ export async function register(req: Request, res: Response): Promise<void> {
     userId: result.data!.id,
     username,
     email: email || null,
+    roleId,
   });
 
   success(res, result.data, MESSAGES.REGISTER_SUCCESS);

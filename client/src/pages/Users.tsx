@@ -13,6 +13,7 @@ import {
   Form,
   Input,
   Tag,
+  Select,
 } from 'antd';
 import {
   UserOutlined,
@@ -21,6 +22,9 @@ import {
   DeleteOutlined,
   ReloadOutlined,
 } from '@ant-design/icons';
+import { usePermission } from '../contexts/PermissionContext';
+import { getAllRoles, Role } from '../services/permission';
+import { register } from '../services/user';
 
 interface User {
   id: number;
@@ -33,7 +37,9 @@ function UserManagement() {
   const [loading, setLoading] = useState(false);
   const [users, setUsers] = useState<User[]>([]);
   const [modalVisible, setModalVisible] = useState(false);
+  const [roles, setRoles] = useState<Role[]>([]);
   const [form] = Form.useForm();
+  const { can } = usePermission();
 
   // 加载用户列表
   const loadUsers = async () => {
@@ -54,9 +60,53 @@ function UserManagement() {
     }
   };
 
+  // 加载角色列表
+  const loadRoles = async () => {
+    try {
+      const response = await getAllRoles();
+      if (response.code === 200) {
+        setRoles(response.data || []);
+      }
+    } catch (error) {
+      console.error('加载角色列表失败', error);
+    }
+  };
+
   useEffect(() => {
     loadUsers();
+    loadRoles();
   }, []);
+
+  // 获取可选角色（管理员可以选择developer和user，其他角色不能添加用户）
+  const getAvailableRoles = () => {
+    // 管理员可以添加开发人员和普通用户
+    if (can('create', 'User')) {
+      return roles.filter((r) => r.name !== 'admin');
+    }
+    return [];
+  };
+
+  const handleAddUser = async (values: { username: string; password: string; email?: string; roleId: number }) => {
+    try {
+      const response = await register({
+        username: values.username,
+        password: values.password,
+        email: values.email,
+        roleId: values.roleId,
+      });
+
+      if (response.code === 200) {
+        message.success('用户添加成功');
+        setModalVisible(false);
+        form.resetFields();
+        loadUsers();
+      } else {
+        message.error(response.message);
+      }
+    } catch (error) {
+      message.error('添加用户失败');
+    }
+  };
 
   const columns = [
     {
@@ -114,6 +164,8 @@ function UserManagement() {
     },
   ];
 
+  const availableRoles = getAvailableRoles();
+
   return (
     <div>
       <Card
@@ -126,13 +178,16 @@ function UserManagement() {
             >
               刷新
             </Button>
-            <Button
-              type="primary"
-              icon={<PlusOutlined />}
-              onClick={() => setModalVisible(true)}
-            >
-              添加用户
-            </Button>
+            {/* 只有管理员可以添加用户 */}
+            {can('create', 'User') && (
+              <Button
+                type="primary"
+                icon={<PlusOutlined />}
+                onClick={() => setModalVisible(true)}
+              >
+                添加用户
+              </Button>
+            )}
           </Space>
         }
       >
@@ -151,10 +206,7 @@ function UserManagement() {
         onCancel={() => setModalVisible(false)}
         onOk={() => {
           form.validateFields().then((values) => {
-            console.log('添加用户:', values);
-            message.success('功能开发中');
-            setModalVisible(false);
-            form.resetFields();
+            handleAddUser(values);
           });
         }}
       >
@@ -178,6 +230,19 @@ function UserManagement() {
             label="邮箱"
           >
             <Input placeholder="请输入邮箱" />
+          </Form.Item>
+          <Form.Item
+            name="roleId"
+            label="角色"
+            rules={[{ required: true, message: '请选择角色' }]}
+          >
+            <Select placeholder="请选择角色">
+              {availableRoles.map((role) => (
+                <Select.Option key={role.id} value={role.id}>
+                  {role.name}
+                </Select.Option>
+              ))}
+            </Select>
           </Form.Item>
         </Form>
       </Modal>

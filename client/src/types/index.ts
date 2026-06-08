@@ -17,6 +17,7 @@ export interface RegisterParams {
   username: string;
   password: string;
   email?: string;
+  roleId?: number;
 }
 
 export interface ChangePasswordParams {

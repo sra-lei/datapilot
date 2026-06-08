@@ -21,7 +21,7 @@ function getDb() {
  */
 export async function register(params: RegisterParams): Promise<ServiceResult<UserInfo>> {
   try {
-    const { username, password, email } = params;
+    const { username, password, email, roleId } = params;
     const db = getDb();
 
     const result = await db.insert(
@@ -29,10 +29,17 @@ export async function register(params: RegisterParams): Promise<ServiceResult<Us
       [username, password, email || null],
     );
 
+    const userId = result.insertId!;
+
+    // 如果指定了角色ID，则为用户分配角色
+    if (roleId) {
+      await permissionService.assignRole(userId, roleId);
+    }
+
     return {
       success: true,
       data: {
-        id: result.insertId!,
+        id: userId,
         username,
         email: email || null,
       },

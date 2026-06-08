@@ -42,6 +42,7 @@ export interface RegisterParams {
   username: string;
   password: string;
   email?: string;
+  roleId?: number;
 }
 
 // 用户登录参数
