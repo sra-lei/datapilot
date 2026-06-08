@@ -219,31 +219,11 @@ function UserManagement() {
       dataIndex: 'status',
       key: 'status',
       width: 120,
-      render: (status: UserStatus, record: User) => {
-        const isAdminUser = isAdmin(record.username);
-        
-        // 管理员用户状态不能修改
-        if (isAdminUser) {
-          return <Tag color="success">启用</Tag>;
-        }
-
-        // 只有管理员可以修改状态
-        if (!can('update', 'User')) {
-          return status === UserStatus.ACTIVE ? (
-            <Tag color="success">启用</Tag>
-          ) : (
-            <Tag color="error">停用</Tag>
-          );
-        }
-
-        return (
-          <Switch
-            checked={status === UserStatus.ACTIVE}
-            onChange={(checked) => handleToggleStatus(record.id, record.username, checked)}
-            checkedChildren="启用"
-            unCheckedChildren="停用"
-            size="small"
-          />
+      render: (status: UserStatus) => {
+        return status === UserStatus.ACTIVE ? (
+          <Tag color="success">启用</Tag>
+        ) : (
+          <Tag color="error">停用</Tag>
         );
       },
     },
@@ -262,7 +242,7 @@ function UserManagement() {
     {
       title: '操作',
       key: 'action',
-      width: 200,
+      width: 280,
       render: (_: unknown, record: User) => {
         const isAdminUser = isAdmin(record.username);
         
@@ -271,6 +251,9 @@ function UserManagement() {
           return null;
         }
 
+        // 根据当前状态显示启用或停用按钮
+        const isActive = record.status === UserStatus.ACTIVE;
+        
         return (
           <Space>
             <Button
@@ -280,22 +263,37 @@ function UserManagement() {
             >
               编辑
             </Button>
-            <Popconfirm
-              title={`确定停用用户 ${record.username}？停用后用户将无法登录`}
-              disabled={isAdminUser}
-              okText="确定"
-              cancelText="取消"
-              onConfirm={() => handleDeleteUser(record.id, record.username)}
-            >
-              <Button
-                type="link"
-                danger
-                icon={<DeleteOutlined />}
-                disabled={isAdminUser}
+            {!isAdminUser && (
+              <Popconfirm
+                title={`确定${isActive ? '停用' : '启用'}用户 ${record.username}？${isActive ? '停用后用户将无法登录' : '启用后用户可以正常登录'}`}
+                okText="确定"
+                cancelText="取消"
+                onConfirm={() => handleToggleStatus(record.id, record.username, !isActive)}
               >
-                {isAdminUser ? '不可操作' : '停用'}
-              </Button>
-            </Popconfirm>
+                <Button
+                  type="link"
+                  danger={isActive}
+                >
+                  {isActive ? '停用' : '启用'}
+                </Button>
+              </Popconfirm>
+            )}
+            {!isAdminUser && (
+              <Popconfirm
+                title={`确定删除用户 ${record.username}？将标记为已删除状态`}
+                okText="确定"
+                cancelText="取消"
+                onConfirm={() => handleDeleteUser(record.id, record.username)}
+              >
+                <Button
+                  type="link"
+                  danger
+                  icon={<DeleteOutlined />}
+                >
+                  删除
+                </Button>
+              </Popconfirm>
+            )}
           </Space>
         );
       },
