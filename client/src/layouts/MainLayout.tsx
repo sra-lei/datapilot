@@ -41,19 +41,19 @@ function MainLayout() {
       key: '/users',
       icon: <UserOutlined />,
       label: '用户管理',
-      permission: { action: 'view', subject: 'User' },
+      permission: { action: 'read', subject: 'User' },
     },
     {
       key: '/permissions',
       icon: <SafetyCertificateOutlined />,
       label: '权限管理',
-      permission: { action: 'view', subject: 'Role' },
+      permission: { action: 'read', subject: 'Role' },
     },
     {
       key: '/settings',
       icon: <SettingOutlined />,
       label: '系统设置',
-      permission: { action: 'view', subject: 'Settings' },
+      permission: { action: 'manage', subject: 'Settings' },
     },
   ];
 
