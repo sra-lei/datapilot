@@ -15,13 +15,11 @@ import {
   Tag,
   Select,
   Popconfirm,
-  Switch,
 } from 'antd';
 import {
   UserOutlined,
   PlusOutlined,
   EditOutlined,
-  DeleteOutlined,
   ReloadOutlined,
 } from '@ant-design/icons';
 import { usePermission } from '../contexts/PermissionContext';
@@ -247,11 +245,11 @@ function UserManagement() {
     {
       title: '操作',
       key: 'action',
-      width: 280,
+      width: 200,
       render: (_: unknown, record: User) => {
         const isAdminUser = isAdmin(record.username);
         
-        // 只有管理员可以编辑和删除用户
+        // 只有管理员可以编辑用户
         if (!can('update', 'User')) {
           return null;
         }
@@ -280,22 +278,6 @@ function UserManagement() {
                   danger={isActive}
                 >
                   {isActive ? '停用' : '启用'}
-                </Button>
-              </Popconfirm>
-            )}
-            {!isAdminUser && (
-              <Popconfirm
-                title={`确定删除用户 ${record.username}？将标记为已删除状态`}
-                okText="确定"
-                cancelText="取消"
-                onConfirm={() => handleDeleteUser(record.id, record.username)}
-              >
-                <Button
-                  type="link"
-                  danger
-                  icon={<DeleteOutlined />}
-                >
-                  删除
                 </Button>
               </Popconfirm>
             )}
