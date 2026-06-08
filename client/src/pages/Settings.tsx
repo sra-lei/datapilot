@@ -29,7 +29,6 @@ interface DatabaseStats {
 }
 
 function SystemSettings() {
-  const [loading, setLoading] = useState(false);
   const [stats, setStats] = useState<DatabaseStats | null>(null);
   const [form] = Form.useForm();
 

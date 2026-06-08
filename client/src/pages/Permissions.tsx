@@ -14,7 +14,6 @@ import {
   Input,
   Tag,
   Popconfirm,
-  Tabs,
   Transfer,
   Descriptions,
 } from 'antd';

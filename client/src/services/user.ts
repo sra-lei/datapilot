@@ -3,7 +3,7 @@
  */
 
 import { request } from '../utils/request';
-import { UserInfo, LoginParams, RegisterParams, ChangePasswordParams, ApiResponse, UserStatus, UpdateUserStatusParams } from '../types';
+import { UserInfo, LoginParams, RegisterParams, ChangePasswordParams, ApiResponse, UpdateUserStatusParams } from '../types';
 
 /**
  * 用户登录
