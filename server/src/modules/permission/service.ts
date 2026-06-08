@@ -80,13 +80,7 @@ export class PermissionService {
    * 初始化默认数据和权限
    */
   private async initializeDefaultData(): Promise<void> {
-    // 检查是否已有数据
-    const existingPermissions = await this.db.query('SELECT COUNT(*) as count FROM permissions');
-    if (existingPermissions.rows && existingPermissions.rows.length > 0 && (existingPermissions.rows[0] as any).count > 0) {
-      return; // 已有数据，跳过初始化
-    }
-
-    // 插入默认权限
+    // 检查并插入默认权限（确保所有权限都存在）
     for (const perm of DEFAULT_PERMISSIONS) {
       try {
         await this.db.insert(
@@ -98,7 +92,7 @@ export class PermissionService {
       }
     }
 
-    // 插入默认角色
+    // 检查并插入默认角色
     for (const role of DEFAULT_ROLES) {
       try {
         await this.db.insert(

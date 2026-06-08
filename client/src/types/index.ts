@@ -24,6 +24,7 @@ export interface ChangePasswordParams {
   username: string;
   oldPassword: string;
   newPassword: string;
+  force?: boolean;
 }
 
 export interface ApiResponse<T = unknown> {

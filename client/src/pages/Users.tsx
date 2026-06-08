@@ -25,7 +25,7 @@ import {
 } from '@ant-design/icons';
 import { usePermission } from '../contexts/PermissionContext';
 import { getAllRoles, Role } from '../services/permission';
-import { register } from '../services/user';
+import { register, deleteUser as deleteUserApi, changePassword } from '../services/user';
 
 interface User {
   id: number;
@@ -134,20 +134,12 @@ function UserManagement() {
   // 编辑用户（修改密码）
   const handleEditUser = async (values: { newPassword: string }) => {
     try {
-      const response = await fetch('/api/user/change-password', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          username: editModalData.username,
-          oldPassword: 'temp', // 管理员修改不需要原密码
-          newPassword: values.newPassword,
-          force: true, // 强制修改标志
-        }),
+      const result = await changePassword({
+        username: editModalData.username,
+        oldPassword: 'temp', // 管理员修改不需要原密码
+        newPassword: values.newPassword,
+        force: true, // 强制修改标志
       });
-
-      const result = await response.json();
 
       if (result.code === 200) {
         message.success('密码修改成功');
@@ -165,11 +157,7 @@ function UserManagement() {
   // 删除用户
   const handleDeleteUser = async (userId: number, username: string) => {
     try {
-      const response = await fetch(`/api/user/${userId}`, {
-        method: 'DELETE',
-      });
-
-      const result = await response.json();
+      const result = await deleteUserApi(userId);
 
       if (result.code === 200) {
         message.success(`用户 ${username} 删除成功`);

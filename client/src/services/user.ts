@@ -36,6 +36,15 @@ export async function changePassword(params: ChangePasswordParams): Promise<ApiR
 }
 
 /**
+ * 删除用户
+ */
+export async function deleteUser(userId: number): Promise<ApiResponse> {
+  return request(`/user/${userId}`, {
+    method: 'DELETE',
+  });
+}
+
+/**
  * 检查健康状态
  */
 export async function checkHealth(): Promise<{ status: string }> {
