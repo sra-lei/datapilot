@@ -690,6 +690,12 @@ export class PermissionService {
    */
   async hasPermission(userId: number, permission: string): Promise<boolean> {
     try {
+      // 首先检查用户是否属于 admin 角色
+      const isAdmin = await this.isUserAdmin(userId);
+      if (isAdmin) {
+        return true;
+      }
+
       const permissions = await this.getUserPermissionList(userId);
 
       // 检查是否有 * (所有权限)
@@ -700,6 +706,25 @@ export class PermissionService {
       return permissions.includes(permission);
     } catch (error) {
       console.error('检查权限失败', error);
+      return false;
+    }
+  }
+
+  /**
+   * 检查用户是否属于 admin 角色
+   */
+  private async isUserAdmin(userId: number): Promise<boolean> {
+    try {
+      const result = await this.db.query(
+        `SELECT r.name FROM roles r
+         INNER JOIN user_roles ur ON r.id = ur.role_id
+         WHERE ur.user_id = ? AND r.name = 'admin'`,
+        [userId]
+      );
+
+      return result.rows !== undefined && result.rows.length > 0;
+    } catch (error) {
+      console.error('检查用户角色失败', error);
       return false;
     }
   }
