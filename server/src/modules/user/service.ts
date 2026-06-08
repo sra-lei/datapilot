@@ -125,34 +125,28 @@ export async function login(params: LoginParams): Promise<ServiceResult<UserInfo
 }
 
 /**
- * 修改密码
+ * 修改密码（管理员强制修改，不需要原密码）
  */
-export async function changePassword(params: ChangePasswordParams): Promise<ServiceResult> {
+export async function updatePassword(params: { username: string; newPassword: string }): Promise<ServiceResult> {
   try {
-    const { username, oldPassword, newPassword } = params;
+    const { username, newPassword } = params;
     const db = getDb();
 
-    // 验证旧密码
-    const result = await db.query(
-      'SELECT id FROM users WHERE username = ? AND password = ?',
-      [username, oldPassword],
-    );
-
-    if (!result.rows || result.rows.length === 0) {
-      return {
-        success: false,
-        error: {
-          code: ErrorCode.UNAUTHORIZED,
-          message: MESSAGES.OLD_PASSWORD_ERROR,
-        },
-      };
-    }
-
     // 更新密码
-    await db.update(
+    const result = await db.update(
       'UPDATE users SET password = ? WHERE username = ?',
       [newPassword, username],
     );
+
+    if (result.affectedRows === 0) {
+      return {
+        success: false,
+        error: {
+          code: ErrorCode.NOT_FOUND,
+          message: MESSAGES.USER_NOT_FOUND,
+        },
+      };
+    }
 
     return { success: true };
   } catch (_err: unknown) {
@@ -161,6 +155,78 @@ export async function changePassword(params: ChangePasswordParams): Promise<Serv
       error: {
         code: ErrorCode.INTERNAL_ERROR,
         message: MESSAGES.CHANGE_PASSWORD_FAILED,
+      },
+    };
+  }
+}
+
+/**
+ * 根据ID获取用户信息
+ */
+export async function getUserById(userId: number): Promise<ServiceResult<UserInfo>> {
+  try {
+    const db = getDb();
+
+    const result = await db.query(
+      'SELECT id, username, email FROM users WHERE id = ?',
+      [userId],
+    );
+
+    if (!result.rows || result.rows.length === 0) {
+      return {
+        success: false,
+        error: {
+          code: ErrorCode.NOT_FOUND,
+          message: MESSAGES.USER_NOT_FOUND,
+        },
+      };
+    }
+
+    return {
+      success: true,
+      data: result.rows[0] as unknown as UserInfo,
+    };
+  } catch (_err: unknown) {
+    return {
+      success: false,
+      error: {
+        code: ErrorCode.INTERNAL_ERROR,
+        message: '获取用户信息失败',
+      },
+    };
+  }
+}
+
+/**
+ * 删除用户
+ */
+export async function deleteUser(userId: number): Promise<ServiceResult> {
+  try {
+    const db = getDb();
+
+    // 删除用户的角色关联
+    await db.delete('DELETE FROM user_roles WHERE user_id = ?', [userId]);
+
+    // 删除用户
+    const result = await db.delete('DELETE FROM users WHERE id = ?', [userId]);
+
+    if (result.affectedRows === 0) {
+      return {
+        success: false,
+        error: {
+          code: ErrorCode.NOT_FOUND,
+          message: MESSAGES.USER_NOT_FOUND,
+        },
+      };
+    }
+
+    return { success: true };
+  } catch (_err: unknown) {
+    return {
+      success: false,
+      error: {
+        code: ErrorCode.INTERNAL_ERROR,
+        message: MESSAGES.DELETE_FAILED,
       },
     };
   }

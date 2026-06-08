@@ -3,7 +3,7 @@
  */
 
 import { Router } from 'express';
-import { register, login, changePassword } from './controller';
+import { register, login, changePassword, deleteUser } from './controller';
 import { requirePermission } from '../middleware/permission';
 
 const router = Router();
@@ -16,5 +16,8 @@ router.post('/login', login);
 
 // 修改密码
 router.post('/change-password', changePassword);
+
+// 删除用户（需要管理员权限）
+router.delete('/:id', requirePermission('user:delete'), deleteUser);
 
 export default router;
