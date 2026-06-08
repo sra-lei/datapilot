@@ -15,7 +15,7 @@ import Profile from '../pages/Profile';
 
 const routes: RouteObject[] = [
   {
-    path: '/',
+    path: '/login',
     element: <Login />,
   },
   {
