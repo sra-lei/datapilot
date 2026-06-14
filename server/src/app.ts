@@ -31,24 +31,22 @@ app.use('/api/database', databaseManagerRouter);
 app.use('/api/permission', permissionRouter);
 
 // 基础路由
-app.get('/', (_req: Request, res: Response) => {
-  const response: any = {
-    message: 'Trae API Server',
-    version: '1.0.0',
-    status: 'running',
-    nodeEnv: envConfig.nodeEnv,
-  };
-  
-  // 仅在启用 Swagger 时显示文档链接
-  if (envConfig.isDevelopment || envConfig.enableSwagger) {
-    response.docs = `http://localhost:${envConfig.port}/api-docs`;
-  }
-  
-  res.json(response);
-});
-
 app.get('/api/health', (_req: Request, res: Response) => {
   success(res, { status: 'ok' }, '服务运行正常');
 });
+
+// Swagger API 文档信息 - 仅在启用 Swagger 时显示
+if (envConfig.isDevelopment || envConfig.enableSwagger) {
+  app.get('/', (_req: Request, res: Response) => {
+    const response: any = {
+      message: 'Trae API Server',
+      version: '1.0.0',
+      status: 'running',
+      nodeEnv: envConfig.nodeEnv,
+      docs: `http://localhost:${envConfig.port}/api-docs`,
+    };
+    res.json(response);
+  });
+}
 
 export default app;
