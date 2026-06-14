@@ -8,7 +8,7 @@ import swaggerUi from 'swagger-ui-express';
 import userRouter from './modules/user/router';
 import databaseManagerRouter from './modules/database-manager/router';
 import permissionRouter from './modules/permission/router';
-import { success } from './utils/response';
+import { success, envConfig } from './utils';
 import { swaggerSpec } from './constants/swaggerConfig';
 
 const app: Application = express();
@@ -17,8 +17,13 @@ const app: Application = express();
 app.use(cors());
 app.use(express.json());
 
-// Swagger UI - 完整的 API 文档
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+// Swagger UI - 仅在开发环境或启用 Swagger 时加载
+if (envConfig.isDevelopment || envConfig.enableSwagger) {
+  app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+  console.log(`✅ Swagger API 文档已启用: http://localhost:${envConfig.port}/api-docs`);
+} else {
+  console.log(`ℹ️  Swagger API 文档已禁用 (NODE_ENV: ${envConfig.nodeEnv})`);
+}
 
 // 路由配置
 app.use('/api/user', userRouter);
@@ -27,10 +32,19 @@ app.use('/api/permission', permissionRouter);
 
 // 基础路由
 app.get('/', (_req: Request, res: Response) => {
-  res.json({
+  const response: any = {
     message: 'Trae API Server',
-    docs: 'http://localhost:3000/api-docs',
-  });
+    version: '1.0.0',
+    status: 'running',
+    nodeEnv: envConfig.nodeEnv,
+  };
+  
+  // 仅在启用 Swagger 时显示文档链接
+  if (envConfig.isDevelopment || envConfig.enableSwagger) {
+    response.docs = `http://localhost:${envConfig.port}/api-docs`;
+  }
+  
+  res.json(response);
 });
 
 app.get('/api/health', (_req: Request, res: Response) => {

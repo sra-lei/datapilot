@@ -3,4 +3,5 @@
  */
 
 export * from './logUtils';
+export * from './env';
 export { success, error } from './response';
