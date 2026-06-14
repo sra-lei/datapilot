@@ -55,15 +55,13 @@ export async function request<T = unknown>(
 
     // 解析响应
     const result = await response.json() as ApiResponse<T>;
-    result.success = response.ok && result.code === 200;
 
     return result;
   } catch (error) {
     console.error(`请求失败 ${url}:`, error);
     return {
-      success: false,
-      code: 500,
-      message: error instanceof Error ? error.message : '请求失败',
+      status: 500,
+      msg: error instanceof Error ? error.message : '请求失败',
     };
   }
 }

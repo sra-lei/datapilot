@@ -15,8 +15,8 @@ function Login() {
     setLoading(true);
     try {
       const result = await login(values);
-      if (result.code === 200 && result.data) {
-          message.success(result.message);
+      if (result.status === 200 && result.data) {
+          message.success(result.msg);
           const userData = {
             ...result.data,
             roles: (result.data as any).roles || ['admin'],
@@ -26,7 +26,7 @@ function Login() {
           localStorage.setItem('currentUser', JSON.stringify(userData));
           window.location.href = '/dashboard';
       } else {
-        message.error(result.message);
+        message.error(result.msg);
       }
     } catch (error) {
       message.error('登录失败，请重试');

@@ -84,7 +84,7 @@ function UserManagement() {
   const loadRoles = async () => {
     try {
       const response = await getAllRoles();
-      if (response.code === 200) {
+      if (response.status === 200) {
         setRoles(response.data || []);
       }
     } catch (error) {
@@ -115,13 +115,13 @@ function UserManagement() {
         roleId: values.roleId,
       });
 
-      if (response.code === 200) {
+      if (response.status === 200) {
         message.success('用户添加成功');
         setAddModalVisible(false);
         addForm.resetFields();
         loadUsers();
       } else {
-        message.error(response.message);
+        message.error(response.msg);
       }
     } catch (error) {
       message.error('添加用户失败');
@@ -148,13 +148,13 @@ function UserManagement() {
         force: true, // 强制修改标志
       });
 
-      if (result.code === 200) {
+      if (result.status === 200) {
         message.success('密码修改成功');
         setEditModalData({ visible: false, userId: 0, username: '' });
         editForm.resetFields();
         loadUsers();
       } else {
-        message.error(result.message);
+        message.error(result.msg);
       }
     } catch (error) {
       message.error('修改密码失败');
@@ -169,11 +169,11 @@ function UserManagement() {
       const newStatus = checked ? UserStatus.ACTIVE : UserStatus.INACTIVE;
       const result = await updateUserStatus({ userId, status: newStatus });
 
-      if (result.code === 200) {
+      if (result.status === 200) {
         message.success(`用户 ${username} ${checked ? '已启用' : '已停用'}`);
         loadUsers();
       } else {
-        message.error(result.message);
+        message.error(result.msg);
       }
     } catch (error) {
       message.error('更新状态失败');

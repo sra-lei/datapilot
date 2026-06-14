@@ -51,10 +51,10 @@ function Dashboard() {
         newPassword,
       });
 
-      if (result.code === 200) {
-        message.success(result.message);
+      if (result.status === 200) {
+        message.success(result.msg);
       } else {
-        message.error(result.message);
+        message.error(result.msg);
       }
     } catch (error) {
       message.error('修改失败，请重试');

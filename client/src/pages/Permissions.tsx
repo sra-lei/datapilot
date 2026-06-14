@@ -50,10 +50,10 @@ function PermissionManagement() {
     setLoading(true);
     try {
       const response = await getAllPermissions();
-      if (response.code === 200) {
+      if (response.status === 200) {
         setPermissions(response.data || []);
       } else {
-        message.error(response.message);
+        message.error(response.msg);
       }
     } catch (error) {
       message.error('加载权限列表失败');
@@ -67,10 +67,10 @@ function PermissionManagement() {
     setLoading(true);
     try {
       const response = await getAllRoles();
-      if (response.code === 200) {
+      if (response.status === 200) {
         setRoles(response.data || []);
       } else {
-        message.error(response.message);
+        message.error(response.msg);
       }
     } catch (error) {
       message.error('加载角色列表失败');
@@ -84,10 +84,10 @@ function PermissionManagement() {
     setLoading(true);
     try {
       const response = await getRoleWithPermissions(roleId);
-      if (response.code === 200) {
+      if (response.status === 200) {
         setSelectedRole(response.data || null);
       } else {
-        message.error(response.message);
+        message.error(response.msg);
       }
     } catch (error) {
       message.error('加载角色详情失败');
@@ -106,13 +106,13 @@ function PermissionManagement() {
     form.validateFields().then(async (values) => {
       try {
         const response = await createRole(values.name, values.description);
-        if (response.code === 200) {
+        if (response.status === 200) {
           message.success('创建角色成功');
           setCreateModalVisible(false);
           form.resetFields();
           loadRoles();
         } else {
-          message.error(response.message);
+          message.error(response.msg);
         }
       } catch (error) {
         message.error('创建角色失败');
@@ -124,14 +124,14 @@ function PermissionManagement() {
   const handleDeleteRole = async (roleId: number) => {
     try {
       const response = await deleteRole(roleId);
-      if (response.code === 200) {
+      if (response.status === 200) {
         message.success('删除角色成功');
         if (selectedRole?.id === roleId) {
           setSelectedRole(null);
         }
         loadRoles();
       } else {
-        message.error(response.message);
+        message.error(response.msg);
       }
     } catch (error) {
       message.error('删除角色失败');
@@ -144,11 +144,11 @@ function PermissionManagement() {
 
     try {
       const response = await grantPermission(selectedRole.id, permissionId);
-      if (response.code === 200) {
+      if (response.status === 200) {
         message.success('授予权限成功');
         loadRoleDetails(selectedRole.id);
       } else {
-        message.error(response.message);
+        message.error(response.msg);
       }
     } catch (error) {
       message.error('授予权限失败');
@@ -161,11 +161,11 @@ function PermissionManagement() {
 
     try {
       const response = await revokePermission(selectedRole.id, permissionId);
-      if (response.code === 200) {
+      if (response.status === 200) {
         message.success('撤销权限成功');
         loadRoleDetails(selectedRole.id);
       } else {
-        message.error(response.message);
+        message.error(response.msg);
       }
     } catch (error) {
       message.error('撤销权限失败');

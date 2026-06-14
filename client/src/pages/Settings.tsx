@@ -54,7 +54,7 @@ function SystemSettings() {
   const loadStats = async () => {
     try {
       const result = await getDatabaseStats();
-      if (result.code === 200 && result.data) {
+      if (result.status === 200 && result.data) {
         setStats(result.data);
       }
     } catch (error) {
@@ -68,7 +68,7 @@ function SystemSettings() {
 
     try {
       const result = await checkBusinessHealth();
-      if (result.success && result.data) {
+      if (result.status === 200 && result.data) {
         setServiceStatus({
           status: result.data.status === 'ok' ? 'ok' : 'error',
           service: result.data.service || 'charter_mate',

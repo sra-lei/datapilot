@@ -50,10 +50,10 @@ function DatabaseViewer() {
     setLoading(true);
     try {
       const result = await getTables();
-      if (result.code === 200) {
+      if (result.status === 200) {
         setTables(result.data || []);
       } else {
-        message.error(result.message);
+        message.error(result.msg);
       }
     } catch (error) {
       message.error('加载表列表失败');
@@ -66,7 +66,7 @@ function DatabaseViewer() {
   const loadStats = async () => {
     try {
       const result = await getDatabaseStats();
-      if (result.code === 200) {
+      if (result.status === 200) {
         setStats(result.data || null);
       }
     } catch (error) {
@@ -79,11 +79,11 @@ function DatabaseViewer() {
     setLoading(true);
     try {
       const result = await getTableData(tableName);
-      if (result.code === 200) {
+      if (result.status === 200) {
         setTableData(result.data || null);
         setSelectedTable(tableName);
       } else {
-        message.error(result.message);
+        message.error(result.msg);
       }
     } catch (error) {
       message.error('加载表数据失败');
@@ -102,11 +102,11 @@ function DatabaseViewer() {
     setLoading(true);
     try {
       const result = await executeQuery(sqlQuery);
-      if (result.code === 200) {
+      if (result.status === 200) {
         setQueryResult(result.data || null);
         message.success('查询成功');
       } else {
-        message.error(result.message);
+        message.error(result.msg);
       }
     } catch (error) {
       message.error('查询执行失败');

@@ -15,11 +15,11 @@ function Register() {
     setLoading(true);
     try {
       const result = await register(values);
-      if (result.code === 200) {
-        message.success(result.message);
+      if (result.status === 200) {
+        message.success(result.msg);
         window.location.href = '/';
       } else {
-        message.error(result.message);
+        message.error(result.msg);
       }
     } catch (error) {
       message.error('注册失败，请重试');

@@ -5,9 +5,8 @@
 
 // 统一响应接口
 export interface ApiResponse<T = unknown> {
-  success: boolean;
-  code: number;
-  message: string;
+  status: number;
+  msg: string;
   data?: T;
 }
 
