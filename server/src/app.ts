@@ -8,6 +8,7 @@ import swaggerUi from 'swagger-ui-express';
 import userRouter from './modules/user/router';
 import databaseManagerRouter from './modules/database-manager/router';
 import permissionRouter from './modules/permission/router';
+import { success } from './utils/response';
 
 const app: Application = express();
 
@@ -149,7 +150,7 @@ app.get('/', (_req: Request, res: Response) => {
 });
 
 app.get('/api/health', (_req: Request, res: Response) => {
-  res.json({ status: 'ok' });
+  success(res, { status: 'ok' }, '服务运行正常');
 });
 
 export default app;
