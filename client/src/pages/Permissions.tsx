@@ -26,17 +26,15 @@ import {
   KeyOutlined,
 } from '@ant-design/icons';
 import {
-  getAllPermissions,
   getAllRoles,
+  getAllPermissions,
   getRoleWithPermissions,
   createRole,
   deleteRole,
   grantPermission,
   revokePermission,
-  Permission,
-  Role,
-  RoleWithPermissions,
 } from '../services/permission';
+import type { Permission, Role, RoleWithPermissions } from '../services/types';
 import { Can } from '../components/Can';
 
 function PermissionManagement() {

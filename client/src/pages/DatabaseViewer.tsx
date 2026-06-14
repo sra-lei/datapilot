@@ -29,13 +29,11 @@ import {
   getTableData,
   getDatabaseStats,
   executeQuery,
-  TableInfo,
-  QueryResult,
-  DatabaseStats,
 } from '../services/database';
+import type { TableInfo, QueryResult, DatabaseStats } from '../services/types';
 
 const { TextArea } = Input;
-const { Title, Text } = Typography;
+const { Text } = Typography;
 
 function DatabaseViewer() {
   const [loading, setLoading] = useState(false);

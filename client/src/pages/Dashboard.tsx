@@ -11,11 +11,11 @@ import {
   LogoutOutlined,
 } from '@ant-design/icons';
 import { checkHealth, changePassword } from '../services/user';
-import { ApiResponse } from '../types';
+import type { ApiResponse } from '../services/types';
 
 function Dashboard() {
-  const [ healthStatus, setHealthStatus ] = useState('checking...');
-  const [ user, setUser ] = useState<{ username: string } | null>(null);
+  const [healthStatus, setHealthStatus] = useState('checking...');
+  const [user, setUser] = useState<{ username: string } | null>(null);
 
   useEffect(() => {
     const storedUser = localStorage.getItem('user');
@@ -24,7 +24,7 @@ function Dashboard() {
     }
 
     checkHealth()
-      .then((data) => setHealthStatus(data.status))
+      .then((data) => setHealthStatus(data.data?.status || 'offline'))
       .catch(() => setHealthStatus('offline'));
   }, []);
 

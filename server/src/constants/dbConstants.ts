@@ -3,7 +3,7 @@
  */
 
 export const DB_CONFIG = {
-  DEFAULT_PORT: 3001,
+  DEFAULT_PORT: 3002,
   DEFAULT_DB_PATH: './data/trae.db',
   JOURNAL_MODE: 'WAL',
 } as const;

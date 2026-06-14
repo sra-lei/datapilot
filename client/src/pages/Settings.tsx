@@ -14,12 +14,19 @@ import {
   Space,
   Divider,
   Descriptions,
+  Badge,
+  Spin,
 } from 'antd';
 import {
   SettingOutlined,
   DatabaseOutlined,
   SaveOutlined,
+  CheckCircleOutlined,
+  ReloadOutlined,
 } from '@ant-design/icons';
+
+import { getDatabaseStats } from '../services/database';
+import { checkBusinessHealth } from '../services/business';
 
 interface DatabaseStats {
   tableCount: number;
@@ -28,17 +35,26 @@ interface DatabaseStats {
   dbFilePath: string;
 }
 
+interface ServiceStatus {
+  status: 'ok' | 'error' | 'checking';
+  service: string;
+  lastCheck: Date | null;
+}
+
 function SystemSettings() {
   const [stats, setStats] = useState<DatabaseStats | null>(null);
+  const [serviceStatus, setServiceStatus] = useState<ServiceStatus>({
+    status: 'checking',
+    service: 'charter_mate',
+    lastCheck: null,
+  });
   const [form] = Form.useForm();
 
   // 加载系统信息
   const loadStats = async () => {
     try {
-      const response = await fetch('/api/database/stats');
-      const result = await response.json();
-
-      if (result.code === 200) {
+      const result = await getDatabaseStats();
+      if (result.code === 200 && result.data) {
         setStats(result.data);
       }
     } catch (error) {
@@ -46,8 +62,38 @@ function SystemSettings() {
     }
   };
 
+  // 检查业务服务状态
+  const checkServiceStatus = async () => {
+    setServiceStatus(prev => ({ ...prev, status: 'checking' }));
+
+    try {
+      const result = await checkBusinessHealth();
+      if (result.success && result.data) {
+        setServiceStatus({
+          status: result.data.status === 'ok' ? 'ok' : 'error',
+          service: result.data.service || 'charter_mate',
+          lastCheck: new Date(),
+        });
+      } else {
+        setServiceStatus({
+          status: 'error',
+          service: 'charter_mate',
+          lastCheck: new Date(),
+        });
+      }
+    } catch (error) {
+      console.error('检查服务状态失败', error);
+      setServiceStatus({
+        status: 'error',
+        service: 'charter_mate',
+        lastCheck: new Date(),
+      });
+    }
+  };
+
   useEffect(() => {
     loadStats();
+    checkServiceStatus();
   }, []);
 
   // 格式化文件大小
@@ -134,6 +180,47 @@ function SystemSettings() {
             </Button>
           </Space>
         </Form>
+      </Card>
+
+      <Divider />
+
+      <Card
+        title={<><CheckCircleOutlined /> 服务状态</>}
+        extra={
+          <Button
+            icon={<ReloadOutlined />}
+            onClick={checkServiceStatus}
+            loading={serviceStatus.status === 'checking'}
+          >
+            刷新状态
+          </Button>
+        }
+      >
+        <Descriptions column={2} bordered>
+          <Descriptions.Item label="服务名称">
+            <Badge
+              status={serviceStatus.status === 'ok' ? 'success' : 'error'}
+              text={serviceStatus.service}
+            />
+          </Descriptions.Item>
+          <Descriptions.Item label="服务状态">
+            {serviceStatus.status === 'checking' ? (
+              <Spin size="small" />
+            ) : serviceStatus.status === 'ok' ? (
+              <Badge status="success" text="运行正常" />
+            ) : (
+              <Badge status="error" text="服务异常" />
+            )}
+          </Descriptions.Item>
+          <Descriptions.Item label="接口地址">
+            http://localhost:8000/api/v1/health
+          </Descriptions.Item>
+          <Descriptions.Item label="最后检查时间">
+            {serviceStatus.lastCheck
+              ? serviceStatus.lastCheck.toLocaleString('zh-CN')
+              : '未检查'}
+          </Descriptions.Item>
+        </Descriptions>
       </Card>
 
       <Divider />

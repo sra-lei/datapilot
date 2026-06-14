@@ -23,8 +23,9 @@ import {
   ReloadOutlined,
 } from '@ant-design/icons';
 import { usePermission } from '../contexts/PermissionContext';
-import { getAllRoles, Role } from '../services/permission';
-import { register, deleteUser as deleteUserApi, changePassword, updateUserStatus } from '../services/user';
+import { getAllRoles } from '../services/permission';
+import { register, changePassword, updateUserStatus } from '../services/user';
+import type { Role } from '../services/types';
 import { UserStatus } from '../types';
 
 interface User {
@@ -160,21 +161,7 @@ function UserManagement() {
     }
   };
 
-  // 删除用户
-  const handleDeleteUser = async (userId: number, username: string) => {
-    try {
-      const result = await deleteUserApi(userId);
-
-      if (result.code === 200) {
-        message.success(`用户 ${username} 删除成功`);
-        loadUsers();
-      } else {
-        message.error(result.message);
-      }
-    } catch (error) {
-      message.error('删除用户失败');
-    }
-  };
+  
 
   // 切换用户状态
   const handleToggleStatus = async (userId: number, username: string, checked: boolean) => {

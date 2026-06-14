@@ -1,57 +1,56 @@
 /**
  * 权限服务 API
+ * 使用主服务器（Node.js Server）
  */
 
-import { request } from '../utils/request';
-
-export interface Permission {
-  id: number;
-  name: string;
-  description: string | null;
-  created_at: string;
-  updated_at: string;
-}
-
-export interface Role {
-  id: number;
-  name: string;
-  description: string | null;
-  created_at: string;
-  updated_at: string;
-}
-
-export interface RoleWithPermissions extends Role {
-  permissions: Permission[];
-}
-
-export interface UserWithRoles {
-  id: number;
-  username: string;
-  email: string | null;
-  roles: Role[];
-  permissions: string[];
-}
-
-export interface ApiResponse<T = unknown> {
-  code: number;
-  message: string;
-  data?: T;
-}
+import { mainRequest } from '../utils/request';
+import { MAIN_API } from './constants';
+import type {
+  ApiResponse,
+  Permission,
+  Role,
+  RoleWithPermissions,
+  UserWithRoles,
+} from './types';
 
 /**
  * 获取所有权限
  */
 export async function getAllPermissions(): Promise<ApiResponse<Permission[]>> {
-  return request('/permission/permissions');
+  return mainRequest(MAIN_API.PERMISSION.LIST);
 }
 
 /**
  * 创建权限
  */
-export async function createPermission(name: string, description?: string): Promise<ApiResponse<Permission>> {
-  return request('/permission/permissions', {
+export async function createPermission(
+  name: string,
+  description?: string
+): Promise<ApiResponse<Permission>> {
+  return mainRequest(MAIN_API.PERMISSION.CREATE, {
     method: 'POST',
-    body: JSON.stringify({ name, description }),
+    body: { name, description },
+  });
+}
+
+/**
+ * 获取权限详情
+ */
+export async function getPermission(id: number): Promise<ApiResponse<Permission>> {
+  return mainRequest(MAIN_API.PERMISSION.GET(id));
+}
+
+/**
+ * 更新权限
+ */
+export async function updatePermission(
+  id: number,
+  name: string,
+  description?: string
+): Promise<ApiResponse<Permission>> {
+  return mainRequest(MAIN_API.PERMISSION.UPDATE(id), {
+    method: 'PUT',
+    body: { name, description },
   });
 }
 
@@ -59,7 +58,7 @@ export async function createPermission(name: string, description?: string): Prom
  * 删除权限
  */
 export async function deletePermission(id: number): Promise<ApiResponse<void>> {
-  return request(`/permission/permissions/${id}`, {
+  return mainRequest(MAIN_API.PERMISSION.DELETE(id), {
     method: 'DELETE',
   });
 }
@@ -68,23 +67,28 @@ export async function deletePermission(id: number): Promise<ApiResponse<void>> {
  * 获取所有角色
  */
 export async function getAllRoles(): Promise<ApiResponse<Role[]>> {
-  return request('/permission/roles');
+  return mainRequest(MAIN_API.ROLE.LIST);
 }
 
 /**
  * 获取角色详情（包括权限）
  */
-export async function getRoleWithPermissions(id: number): Promise<ApiResponse<RoleWithPermissions>> {
-  return request(`/permission/roles/${id}`);
+export async function getRoleWithPermissions(
+  id: number
+): Promise<ApiResponse<RoleWithPermissions>> {
+  return mainRequest(MAIN_API.ROLE.GET(id));
 }
 
 /**
  * 创建角色
  */
-export async function createRole(name: string, description?: string): Promise<ApiResponse<Role>> {
-  return request('/permission/roles', {
+export async function createRole(
+  name: string,
+  description?: string
+): Promise<ApiResponse<Role>> {
+  return mainRequest(MAIN_API.ROLE.CREATE, {
     method: 'POST',
-    body: JSON.stringify({ name, description }),
+    body: { name, description },
   });
 }
 
@@ -96,9 +100,9 @@ export async function updateRole(
   name: string,
   description?: string
 ): Promise<ApiResponse<Role>> {
-  return request(`/permission/roles/${id}`, {
+  return mainRequest(MAIN_API.ROLE.UPDATE(id), {
     method: 'PUT',
-    body: JSON.stringify({ name, description }),
+    body: { name, description },
   });
 }
 
@@ -106,7 +110,7 @@ export async function updateRole(
  * 删除角色
  */
 export async function deleteRole(id: number): Promise<ApiResponse<void>> {
-  return request(`/permission/roles/${id}`, {
+  return mainRequest(MAIN_API.ROLE.DELETE(id), {
     method: 'DELETE',
   });
 }
@@ -118,9 +122,9 @@ export async function grantPermission(
   roleId: number,
   permissionId: number
 ): Promise<ApiResponse<void>> {
-  return request(`/permission/roles/${roleId}/permissions`, {
+  return mainRequest(MAIN_API.ROLE.GRANT_PERMISSION(roleId), {
     method: 'POST',
-    body: JSON.stringify({ permissionId }),
+    body: { permissionId },
   });
 }
 
@@ -131,7 +135,7 @@ export async function revokePermission(
   roleId: number,
   permissionId: number
 ): Promise<ApiResponse<void>> {
-  return request(`/permission/roles/${roleId}/permissions/${permissionId}`, {
+  return mainRequest(MAIN_API.ROLE.REVOKE_PERMISSION(roleId, permissionId), {
     method: 'DELETE',
   });
 }
@@ -143,9 +147,9 @@ export async function assignRole(
   userId: number,
   roleId: number
 ): Promise<ApiResponse<void>> {
-  return request(`/permission/users/${userId}/roles`, {
+  return mainRequest(MAIN_API.USER_PERMISSION.ASSIGN_ROLE(userId), {
     method: 'POST',
-    body: JSON.stringify({ roleId }),
+    body: { roleId },
   });
 }
 
@@ -156,7 +160,7 @@ export async function revokeUserRole(
   userId: number,
   roleId: number
 ): Promise<ApiResponse<void>> {
-  return request(`/permission/users/${userId}/roles/${roleId}`, {
+  return mainRequest(MAIN_API.USER_PERMISSION.REVOKE_ROLE(userId, roleId), {
     method: 'DELETE',
   });
 }
@@ -164,6 +168,8 @@ export async function revokeUserRole(
 /**
  * 获取用户的角色和权限
  */
-export async function getUserPermissions(userId: number): Promise<ApiResponse<UserWithRoles>> {
-  return request(`/permission/users/${userId}/permissions`);
+export async function getUserPermissions(
+  userId: number
+): Promise<ApiResponse<UserWithRoles>> {
+  return mainRequest(MAIN_API.USER_PERMISSION.GET_PERMISSIONS(userId));
 }
