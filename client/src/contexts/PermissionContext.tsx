@@ -4,7 +4,7 @@
 
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { defineAbility, Ability } from '@casl/ability';
-import { getUserPermissions } from '../services/permission';
+import { getUserPermissions } from '../services/core';
 
 interface AuthUser {
   id: number;

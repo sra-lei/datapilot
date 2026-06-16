@@ -30,8 +30,8 @@ import {
   getTableData,
   getDatabaseStats,
   executeQuery,
-} from '../services/database';
-import type { TableInfo, QueryResult, DatabaseStats } from '../services/types';
+} from '../services/core';
+import type { TableInfo, QueryResult, DatabaseStats } from '../services/core';
 
 const { TextArea } = Input;
 const { Text } = Typography;

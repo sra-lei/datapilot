@@ -33,8 +33,8 @@ import {
   deleteRole,
   grantPermission,
   revokePermission,
-} from '../services/permission';
-import type { Permission, Role, RoleWithPermissions } from '../services/types';
+} from '../services/core';
+import type { Permission, Role, RoleWithPermissions } from '../services/core';
 import { Can } from '../components/Can';
 
 function PermissionManagement() {

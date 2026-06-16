@@ -5,7 +5,7 @@
 import { useState } from 'react';
 import { Form, Input, Button, Card, message } from 'antd';
 import { UserOutlined, LockOutlined } from '@ant-design/icons';
-import { login } from '../services/user';
+import { login } from '../services/core';
 
 function Login() {
   const [ loading, setLoading ] = useState(false);

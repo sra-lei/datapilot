@@ -2,9 +2,12 @@
  * 个人资料页面
  */
 
-import { Card, Descriptions, Tag, Space, Button, message } from 'antd';
-import { UserOutlined, LogoutOutlined } from '@ant-design/icons';
+import { useState } from 'react';
+import { Card, Descriptions, Tag, Space, Button, message, Modal, Form, Input } from 'antd';
+import { UserOutlined, LogoutOutlined, LockOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
+import { changePassword } from '../services/core';
+import type { ApiResponse } from '../services/core';
 
 interface UserInfo {
   id: number;
@@ -15,6 +18,9 @@ interface UserInfo {
 
 function Profile() {
   const navigate = useNavigate();
+  const [passwordModalVisible, setPasswordModalVisible] = useState(false);
+  const [form] = Form.useForm();
+  const [loading, setLoading] = useState(false);
 
   // 从 localStorage 获取用户信息
   const getUserInfo = (): UserInfo | null => {
@@ -54,6 +60,29 @@ function Profile() {
     navigate('/login');
   };
 
+  const handleChangePassword = async (values: { oldPassword: string; newPassword: string }) => {
+    setLoading(true);
+    try {
+      const result: ApiResponse = await changePassword({
+        username: userInfo?.username || '',
+        oldPassword: values.oldPassword,
+        newPassword: values.newPassword,
+      });
+
+      if (result.status === 200) {
+        message.success(result.msg);
+        setPasswordModalVisible(false);
+        form.resetFields();
+      } else {
+        message.error(result.msg);
+      }
+    } catch (error) {
+      message.error('修改失败，请重试');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   if (!userInfo) {
     return (
       <Card>
@@ -68,6 +97,7 @@ function Profile() {
   }
 
   return (
+    <>
     <Card
       title={
         <Space>
@@ -76,9 +106,14 @@ function Profile() {
         </Space>
       }
       extra={
-        <Button danger icon={<LogoutOutlined />} onClick={handleLogout}>
-          退出登录
-        </Button>
+        <Space>
+          <Button icon={<LockOutlined />} onClick={() => setPasswordModalVisible(true)}>
+            修改密码
+          </Button>
+          <Button danger icon={<LogoutOutlined />} onClick={handleLogout}>
+            退出登录
+          </Button>
+        </Space>
       }
     >
       <Descriptions column={1} bordered>
@@ -103,6 +138,53 @@ function Profile() {
         )}
       </Descriptions>
     </Card>
+
+    <Modal
+      title="修改密码"
+      open={passwordModalVisible}
+      onCancel={() => {
+        setPasswordModalVisible(false);
+        form.resetFields();
+      }}
+      onOk={() => form.submit()}
+      confirmLoading={loading}
+    >
+      <Form form={form} layout="vertical" onFinish={handleChangePassword}>
+        <Form.Item
+          name="oldPassword"
+          label="旧密码"
+          rules={[{ required: true, message: '请输入旧密码' }]}
+        >
+          <Input.Password placeholder="请输入旧密码" />
+        </Form.Item>
+        <Form.Item
+          name="newPassword"
+          label="新密码"
+          rules={[{ required: true, message: '请输入新密码' }]}
+        >
+          <Input.Password placeholder="请输入新密码" />
+        </Form.Item>
+        <Form.Item
+          name="confirmPassword"
+          label="确认新密码"
+          dependencies={['newPassword']}
+          rules={[
+            { required: true, message: '请确认新密码' },
+            ({ getFieldValue }) => ({
+              validator(_, value) {
+                if (!value || getFieldValue('newPassword') === value) {
+                  return Promise.resolve();
+                }
+                return Promise.reject(new Error('两次输入的密码不一致'));
+              },
+            }),
+          ]}
+        >
+          <Input.Password placeholder="请确认新密码" />
+        </Form.Item>
+      </Form>
+    </Modal>
+  </>
   );
 }
 

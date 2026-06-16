@@ -23,9 +23,8 @@ import {
   ReloadOutlined,
 } from '@ant-design/icons';
 import { usePermission } from '../contexts/PermissionContext';
-import { getAllRoles } from '../services/permission';
-import { register, changePassword, updateUserStatus } from '../services/user';
-import type { Role } from '../services/types';
+import { getAllRoles, register, changePassword, updateUserStatus } from '../services/core';
+import type { Role } from '../services/core';
 import { UserStatus } from '../types';
 
 interface User {

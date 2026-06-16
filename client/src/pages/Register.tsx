@@ -5,7 +5,7 @@
 import { useState } from 'react';
 import { Form, Input, Button, Card, message } from 'antd';
 import { UserOutlined, LockOutlined, MailOutlined } from '@ant-design/icons';
-import { register } from '../services/user';
+import { register } from '../services/core';
 
 function Register() {
   const [ loading, setLoading ] = useState(false);
