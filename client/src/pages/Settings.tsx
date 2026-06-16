@@ -53,10 +53,6 @@ function SystemSettings() {
           </Space>
         </Form>
       </Card>
-
-      <Card title="提示" style={{ marginTop: 16 }}>
-        <p>服务状态监控已移至仪表盘页面，请在仪表盘中查看 Core Service 和 CharterMate 的运行状态。</p>
-      </Card>
     </div>
   );
 }
