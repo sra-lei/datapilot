@@ -1,4 +1,4 @@
-@echo off
+﻿@echo off
 chcp 65001 >nul
 echo ========================================
 echo    Trae 开发环境启动脚本
