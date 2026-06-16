@@ -126,7 +126,7 @@ echo   - Core Service:    http://localhost:3002
 echo   - CharterMate:     http://localhost:8000
 echo.
 echo API 文档：
-echo   - Core Service:    http://localhost:3002/api-docs
+echo   - Core Service:    http://localhost:3002/core/api-docs
 echo   - CharterMate:     http://localhost:8000/docs
 echo.
 echo 日志查看：查看对应的终端窗口
@@ -151,7 +151,7 @@ start "Core - Express" cmd /k "cd /d "%~dp0services\core" && npm run dev"
 echo.
 echo Core Service 已启动
 echo 访问地址：http://localhost:3002
-echo API 文档：http://localhost:3002/api-docs
+echo API 文档：http://localhost:3002/core/api-docs
 echo 日志查看：查看 Core Service 终端窗口
 goto END
 

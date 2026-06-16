@@ -9,57 +9,57 @@
 export const MAIN_API = {
   // 用户相关
   USER: {
-    LOGIN: '/api/user/login',
-    REGISTER: '/api/user/register',
-    LIST: '/api/user/list',
-    STATUS: '/api/user/status',
-    CHANGE_PASSWORD: '/api/user/change-password',
-    DELETE: (id: number) => `/api/user/${id}`,
+    LOGIN: '/core/user/login',
+    REGISTER: '/core/user/register',
+    LIST: '/core/user/list',
+    STATUS: '/core/user/status',
+    CHANGE_PASSWORD: '/core/user/change-password',
+    DELETE: (id: number) => `/core/user/${id}`,
   },
 
   // 权限相关
   PERMISSION: {
-    LIST: '/api/permission/permissions',
-    CREATE: '/api/permission/permissions',
-    DELETE: (id: number) => `/api/permission/permissions/${id}`,
-    GET: (id: number) => `/api/permission/permissions/${id}`,
-    UPDATE: (id: number) => `/api/permission/permissions/${id}`,
+    LIST: '/core/permission/permissions',
+    CREATE: '/core/permission/permissions',
+    DELETE: (id: number) => `/core/permission/permissions/${id}`,
+    GET: (id: number) => `/core/permission/permissions/${id}`,
+    UPDATE: (id: number) => `/core/permission/permissions/${id}`,
   },
 
   // 角色相关
   ROLE: {
-    LIST: '/api/permission/roles',
-    CREATE: '/api/permission/roles',
-    GET: (id: number) => `/api/permission/roles/${id}`,
-    UPDATE: (id: number) => `/api/permission/roles/${id}`,
-    DELETE: (id: number) => `/api/permission/roles/${id}`,
-    GRANT_PERMISSION: (roleId: number) => `/api/permission/roles/${roleId}/permissions`,
+    LIST: '/core/permission/roles',
+    CREATE: '/core/permission/roles',
+    GET: (id: number) => `/core/permission/roles/${id}`,
+    UPDATE: (id: number) => `/core/permission/roles/${id}`,
+    DELETE: (id: number) => `/core/permission/roles/${id}`,
+    GRANT_PERMISSION: (roleId: number) => `/core/permission/roles/${roleId}/permissions`,
     REVOKE_PERMISSION: (roleId: number, permissionId: number) =>
-      `/api/permission/roles/${roleId}/permissions/${permissionId}`,
+      `/core/permission/roles/${roleId}/permissions/${permissionId}`,
   },
 
   // 用户权限相关
   USER_PERMISSION: {
-    ASSIGN_ROLE: (userId: number) => `/api/permission/users/${userId}/roles`,
+    ASSIGN_ROLE: (userId: number) => `/core/permission/users/${userId}/roles`,
     REVOKE_ROLE: (userId: number, roleId: number) =>
-      `/api/permission/users/${userId}/roles/${roleId}`,
-    GET_PERMISSIONS: (userId: number) => `/api/permission/users/${userId}/permissions`,
+      `/core/permission/users/${userId}/roles/${roleId}`,
+    GET_PERMISSIONS: (userId: number) => `/core/permission/users/${userId}/permissions`,
   },
 
   // 数据库相关
   DATABASE: {
-    TABLES: '/api/database/tables',
+    TABLES: '/core/database/tables',
     GET_TABLE_INFO: (tableName: string) =>
-      `/api/database/tables/${encodeURIComponent(tableName)}/info`,
+      `/core/database/tables/${encodeURIComponent(tableName)}/info`,
     GET_TABLE_DATA: (tableName: string) =>
-      `/api/database/tables/${encodeURIComponent(tableName)}/data`,
-    QUERY: '/api/database/query',
-    STATS: '/api/database/stats',
+      `/core/database/tables/${encodeURIComponent(tableName)}/data`,
+    QUERY: '/core/database/query',
+    STATS: '/core/database/stats',
   },
 
   // 系统相关
   SYSTEM: {
-    HEALTH: '/api/health',
+    HEALTH: '/core/health',
   },
 } as const;
 
@@ -69,34 +69,34 @@ export const MAIN_API = {
 export const BUSINESS_API = {
   // 用户相关
   USER: {
-    LIST: '/api/user/list',
-    REGISTER: '/api/user/register',
-    LOGIN: '/api/user/login',
-    STATUS: '/api/user/status',
-    CHANGE_PASSWORD: '/api/user/password',
+    LIST: '/core/user/list',
+    REGISTER: '/core/user/register',
+    LOGIN: '/core/user/login',
+    STATUS: '/core/user/status',
+    CHANGE_PASSWORD: '/core/user/password',
   },
 
   // 权限相关
   PERMISSION: {
-    INITIALIZE: '/api/permission/initialize',
-    ROLE_LIST: '/api/permission/role/list',
-    CREATE_ROLE: '/api/permission/role',
-    PERMISSION_LIST: '/api/permission/permission/list',
-    CREATE_PERMISSION: '/api/permission/permission',
-    ASSIGN_ROLE: '/api/permission/assign-role',
-    ASSIGN_PERMISSION: '/api/permission/assign-permission',
-    GET_USER_PERMISSIONS: (userId: number) => `/api/permission/user/${userId}`,
+    INITIALIZE: '/core/permission/initialize',
+    ROLE_LIST: '/core/permission/role/list',
+    CREATE_ROLE: '/core/permission/role',
+    PERMISSION_LIST: '/core/permission/permission/list',
+    CREATE_PERMISSION: '/core/permission/permission',
+    ASSIGN_ROLE: '/core/permission/assign-role',
+    ASSIGN_PERMISSION: '/core/permission/assign-permission',
+    GET_USER_PERMISSIONS: (userId: number) => `/core/permission/user/${userId}`,
   },
 
   // 数据库相关
   DATABASE: {
-    TABLES: '/api/database/tables',
+    TABLES: '/core/database/tables',
     GET_TABLE_STRUCTURE: (tableName: string) =>
-      `/api/database/table/${tableName}/structure`,
+      `/core/database/table/${tableName}/structure`,
     GET_TABLE_DATA: (tableName: string) =>
-      `/api/database/table/${tableName}/data`,
-    QUERY: '/api/database/query',
-    STATS: '/api/database/stats',
+      `/core/database/table/${tableName}/data`,
+    QUERY: '/core/database/query',
+    STATS: '/core/database/stats',
   },
 
   // 系统相关
@@ -109,6 +109,6 @@ export const BUSINESS_API = {
  * API 前缀
  */
 export const API_PREFIX = {
-  MAIN: '/api',
+  MAIN: '/core',
   BUSINESS: '/api',
 } as const;

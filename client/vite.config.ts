@@ -7,8 +7,8 @@ export default defineConfig({
   server: {
     port: 3001,
     proxy: {
-      // 主服务器代理（Node.js Server）
-      '/api': {
+      // 主服务器代理（Node.js Server）- Core Service
+      '/core': {
         target: 'http://localhost:3002',
         changeOrigin: true,
         rewrite: (path) => path,

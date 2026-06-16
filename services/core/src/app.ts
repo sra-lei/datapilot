@@ -19,19 +19,19 @@ app.use(express.json());
 
 // Swagger UI - 仅在开发环境或启用 Swagger 时加载
 if (envConfig.isDevelopment || envConfig.enableSwagger) {
-  app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
-  console.log(`✅ Swagger API 文档已启用: http://localhost:${envConfig.port}/api-docs`);
+  app.use('/core/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+  console.log(`✅ Swagger API 文档已启用: http://localhost:${envConfig.port}/core/api-docs`);
 } else {
   console.log(`ℹ️  Swagger API 文档已禁用 (NODE_ENV: ${envConfig.nodeEnv})`);
 }
 
 // 路由配置
-app.use('/api/user', userRouter);
-app.use('/api/database', databaseManagerRouter);
-app.use('/api/permission', permissionRouter);
+app.use('/core/user', userRouter);
+app.use('/core/database', databaseManagerRouter);
+app.use('/core/permission', permissionRouter);
 
 // 基础路由
-app.get('/api/health', (_req: Request, res: Response) => {
+app.get('/core/health', (_req: Request, res: Response) => {
   success(res, { status: 'ok' }, '服务运行正常');
 });
 
@@ -39,11 +39,11 @@ app.get('/api/health', (_req: Request, res: Response) => {
 if (envConfig.isDevelopment || envConfig.enableSwagger) {
   app.get('/', (_req: Request, res: Response) => {
     const response: any = {
-      message: 'Trae API Server',
+      message: 'Trae Core Service',
       version: '1.0.0',
       status: 'running',
       nodeEnv: envConfig.nodeEnv,
-      docs: `http://localhost:${envConfig.port}/api-docs`,
+      docs: `http://localhost:${envConfig.port}/core/api-docs`,
     };
     res.json(response);
   });
