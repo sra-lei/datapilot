@@ -1,11 +1,11 @@
 # Trae 项目开发环境启动脚本
-# 功能：同时启动 Client、Server、Server_Chartermate 三个服务
+# 功能：同时启动 Client、Core Service、CharterMate 三个服务
 # 特点：在独立终端窗口中运行，可实时查看日志
 
 param(
     [switch]$Client = $false,        # 仅启动 Client
-    [switch]$Server = $false,        # 仅启动 Server
-    [switch]$Chartermate = $false,  # 仅启动 Server_Chartermate
+    [switch]$Core = $false,          # 仅启动 Core Service
+    [switch]$Chartermate = $false,  # 仅启动 CharterMate Service
     [switch]$All = $true             # 启动所有服务（默认）
 )
 
@@ -22,7 +22,7 @@ function Write-ColorOutput {
 function Stop-AllServices {
     Write-ColorOutput "`n正在停止所有服务..." "Yellow"
     
-    # 停止 Node.js 进程（Vite、Server）
+    # 停止 Node.js 进程（Vite、Core Service）
     Get-Process -Name "node" -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue
     
     # 停止 Python 进程（FastAPI/Uvicorn）
@@ -68,29 +68,29 @@ function Start-Client {
     npm run dev
 }
 
-# 启动 Server
-function Start-Server {
+# 启动 Core Service
+function Start-Core {
     Write-ColorOutput "`n========================================" "Cyan"
-    Write-ColorOutput "启动 Server (Express + TypeScript)" "Cyan"
+    Write-ColorOutput "启动 Core Service (Express + TypeScript)" "Cyan"
     Write-ColorOutput "========================================" "Cyan"
     Write-ColorOutput "访问地址: http://localhost:3002" "Yellow"
     Write-ColorOutput "API 文档: http://localhost:3002/api-docs" "Yellow"
     Write-ColorOutput "按 Ctrl+C 停止" "Gray"
     
-    Set-Location "e:\workspace\Trae\server"
+    Set-Location "e:\workspace\Trae\services\core"
     npm run dev
 }
 
-# 启动 Server_Chartermate
+# 启动 CharterMate Service
 function Start-Chartermate {
     Write-ColorOutput "`n========================================" "Cyan"
-    Write-ColorOutput "启动 Server_Chartermate (FastAPI)" "Cyan"
+    Write-ColorOutput "启动 CharterMate Service (FastAPI)" "Cyan"
     Write-ColorOutput "========================================" "Cyan"
     Write-ColorOutput "访问地址: http://localhost:8000" "Yellow"
     Write-ColorOutput "API 文档: http://localhost:8000/docs" "Yellow"
     Write-ColorOutput "按 Ctrl+C 停止" "Gray"
     
-    Set-Location "e:\workspace\Trae\server_chartermate"
+    Set-Location "e:\workspace\Trae\services\chartermate"
     
     # 检查依赖
     if (-not (Test-Path "venv")) {
@@ -99,7 +99,7 @@ function Start-Chartermate {
     }
     
     # 激活虚拟环境并安装依赖
-    & "e:\workspace\Trae\server_chartermate\venv\Scripts\Activate.ps1"
+    & "e:\workspace\Trae\services\chartermate\venv\Scripts\Activate.ps1"
     pip install -q -r requirements.txt
     
     # 启动服务
@@ -124,11 +124,11 @@ function Main {
     # 根据参数决定启动哪些服务
     $servicesToStart = @()
     
-    if ($All -or (-not $Client -and -not $Server -and -not $Chartermate)) {
-        $servicesToStart = @("Client", "Server", "Chartermate")
+    if ($All -or (-not $Client -and -not $Core -and -not $Chartermate)) {
+        $servicesToStart = @("Client", "Core", "Chartermate")
     } else {
         if ($Client) { $servicesToStart += "Client" }
-        if ($Server) { $servicesToStart += "Server" }
+        if ($Core) { $servicesToStart += "Core" }
         if ($Chartermate) { $servicesToStart += "Chartermate" }
     }
     
@@ -141,7 +141,7 @@ function Main {
     foreach ($service in $servicesToStart) {
         switch ($service) {
             "Client" { Start-Client }
-            "Server" { Start-Server }
+            "Core" { Start-Core }
             "Chartermate" { Start-Chartermate }
         }
     }

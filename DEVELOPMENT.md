@@ -2,13 +2,35 @@
 
 ## 📋 概述
 
-Trae 项目包含三个主要服务：
+Trae 项目包含三个主要服务，采用微服务架构组织：
 
-| 服务 | 技术栈 | 端口 | 说明 |
-|------|--------|------|------|
-| **Client** | Vite + React | 3001 | 前端界面 |
-| **Server** | Express + TypeScript | 3002 | Node.js 主服务器 |
-| **Server_Chartermate** | FastAPI + Python | 8000 | Python 业务服务器 |
+| 服务 | 技术栈 | 端口 | 目录 | 说明 |
+|------|--------|------|------|------|
+| **Client** | Vite + React | 3001 | `client/` | 前端界面 |
+| **Core Service** | Express + TypeScript | 3002 | `services/core/` | 核心服务（用户、权限、数据库管理） |
+| **CharterMate** | FastAPI + Python | 8000 | `services/chartermate/` | 业务服务（RAG 智能问答） |
+
+## 📁 项目结构
+
+```
+Trae/
+├── client/                    # 前端应用
+│   ├── src/
+│   ├── package.json
+│   └── ...
+├── services/                  # 后端服务集合
+│   ├── core/                  # 核心服务（原 server）
+│   │   ├── src/
+│   │   ├── package.json
+│   │   └── ...
+│   └── chartermate/           # CharterMate 业务服务（原 server_chartermate）
+│       ├── app/
+│       ├── requirements.txt
+│       └── ...
+├── start-dev.bat              # Windows 启动脚本
+├── start-dev.ps1              # PowerShell 启动脚本
+└── DEVELOPMENT.md             # 开发文档
+```
 
 ## 🚀 快速启动
 
@@ -17,11 +39,19 @@ Trae 项目包含三个主要服务：
 双击运行 `start-dev.bat`，选择启动模式：
 
 ```
-[1] 启动所有服务（推荐）
-[2] 仅启动 Client
-[3] 仅启动 Server
-[4] 仅启动 Server_Chartermate
-[5] 停止所有服务
+========================================
+   Trae 开发环境启动脚本
+========================================
+
+选择启动模式：
+  [1] 启动所有服务（推荐）
+  [2] 仅启动 Client
+  [3] 仅启动 Core Service
+  [4] 仅启动 CharterMate Service
+  [5] 停止所有服务
+========================================
+
+请输入选项 (1-5): 1
 ```
 
 **优点**：
@@ -38,7 +68,7 @@ Trae 项目包含三个主要服务：
 
 # 仅启动特定服务
 .\start-dev.ps1 -Client
-.\start-dev.ps1 -Server
+.\start-dev.ps1 -Core
 .\start-dev.ps1 -Chartermate
 ```
 
@@ -51,17 +81,17 @@ cd e:\workspace\Trae\client
 npm run dev
 ```
 
-#### 2. 启动 Server（新终端）
+#### 2. 启动 Core Service（新终端）
 
 ```bash
-cd e:\workspace\Trae\server
+cd e:\workspace\Trae\services\core
 npm run dev
 ```
 
-#### 3. 启动 Server_Chartermate（新终端）
+#### 3. 启动 CharterMate（新终端）
 
 ```bash
-cd e:\workspace\Trae\server_chartermate
+cd e:\workspace\Trae\services\chartermate
 pip install -r requirements.txt
 python -m uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 ```
@@ -73,15 +103,15 @@ python -m uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 | 服务 | 地址 | 说明 |
 |------|------|------|
 | Client | http://localhost:3001 | 前端应用 |
-| Server | http://localhost:3002 | 主服务器 API |
-| Server_Chartermate | http://localhost:8000 | 业务服务器 API |
+| Core Service | http://localhost:3002 | 核心服务 API |
+| CharterMate | http://localhost:8000 | 业务服务 API |
 
 ### API 文档
 
 | 服务 | 地址 | 说明 |
 |------|------|------|
-| Server | http://localhost:3002/api-docs | Swagger 文档（仅开发环境） |
-| Server_Chartermate | http://localhost:8000/docs | FastAPI 自动生成文档 |
+| Core Service | http://localhost:3002/api-docs | Swagger 文档（仅开发环境） |
+| CharterMate | http://localhost:8000/docs | FastAPI 自动生成文档 |
 
 ## 🔍 查看日志
 
@@ -103,7 +133,7 @@ python -m uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 └─────────────────────────────────────┘
 
 ┌─────────────────────────────────────┐
-│ Server - Express                   │  ← 绿色标题栏
+│ Core - Express                     │  ← 绿色标题栏
 ├─────────────────────────────────────┤
 │ Server is running on port 3002     │
 │ Environment: development           │
@@ -114,7 +144,7 @@ python -m uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 └─────────────────────────────────────┘
 
 ┌─────────────────────────────────────┐
-│ Server_Chartermate - FastAPI       │  ← 紫色标题栏
+│ CharterMate - FastAPI              │  ← 紫色标题栏
 ├─────────────────────────────────────┤
 │ INFO:     Uvicorn running on        │
 │           http://0.0.0.0:8000       │
@@ -132,13 +162,13 @@ python -m uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 - ✅ 浏览器控制台错误映射
 - ✅ 请求代理日志
 
-#### Server (Express)
+#### Core Service (Express)
 - ✅ HTTP 请求日志（使用 Winston）
 - ✅ 数据库操作日志
 - ✅ 权限检查日志
 - ✅ 错误堆栈跟踪
 
-#### Server_Chartermate (FastAPI)
+#### CharterMate (FastAPI)
 - ✅ 请求日志（使用 Loguru）
 - ✅ RAG 处理日志
 - ✅ 向量检索日志
@@ -169,7 +199,7 @@ taskkill /PID <PID> /F
 #### Node.js 依赖
 
 ```bash
-cd e:\workspace\Trae\client
+cd e:\workspace\Trae\services\core
 rm -rf node_modules package-lock.json
 npm install
 ```
@@ -177,14 +207,14 @@ npm install
 #### Python 依赖
 
 ```bash
-cd e:\workspace\Trae\server_chartermate
+cd e:\workspace\Trae\services\chartermate
 pip install -r requirements.txt
 ```
 
 ### 3. TypeScript 编译错误
 
 ```bash
-cd e:\workspace\Trae\server
+cd e:\workspace\Trae\services\core
 npx tsc --noEmit
 ```
 
@@ -193,7 +223,7 @@ npx tsc --noEmit
 确保使用正确的环境：
 
 ```bash
-cd e:\workspace\Trae\server_chartermate
+cd e:\workspace\Trae\services\chartermate
 python -c "import app; print('OK')"
 ```
 
@@ -207,19 +237,19 @@ python -c "import app; print('OK')"
 # 标签页 1: Client
 cd e:\workspace\Trae\client; npm run dev
 
-# 标签页 2: Server
-cd e:\workspace\Trae\server; npm run dev
+# 标签页 2: Core Service
+cd e:\workspace\Trae\services\core; npm run dev
 
-# 标签页 3: Server_Chartermate
-cd e:\workspace\Trae\server_chartermate; python -m uvicorn app.main:app --reload
+# 标签页 3: CharterMate
+cd e:\workspace\Trae\services\chartermate; python -m uvicorn app.main:app --reload
 ```
 
 ### 2. 过滤日志
 
-#### Server 日志（过滤 INFO 级别）
+#### Core Service 日志（过滤 INFO 级别）
 
 ```javascript
-// server/src/utils/logger.js
+// services/core/src/utils/logUtils.ts
 const levels = {
   error: 0,
   warn: 1,
@@ -228,10 +258,10 @@ const levels = {
 };
 ```
 
-#### Server_Chartermate 日志（过滤特定模块）
+#### CharterMate 日志（过滤特定模块）
 
 ```python
-# server_chartermate/app/main.py
+# services/chartermate/app/main.py
 logger.add(sys.stderr, level="INFO")  # 只显示 INFO 及以上
 ```
 
@@ -240,13 +270,12 @@ logger.add(sys.stderr, level="INFO")  # 只显示 INFO 及以上
 #### Client
 - 浏览器 DevTools (F12)
 - React DevTools 扩展
-- Redux DevTools（如果使用）
 
-#### Server
+#### Core Service
 - Node.js 调试器：`node --inspect src/index.ts`
 - VS Code 调试配置
 
-#### Server_Chartermate
+#### CharterMate
 - Python 调试器：`python -m debugpy -m uvicorn app.main:app`
 
 ## 📝 日志输出示例
@@ -259,7 +288,7 @@ logger.add(sys.stderr, level="INFO")  # 只显示 INFO 及以上
 POST /api/user/login 200 45ms
 ```
 
-#### Server
+#### Core Service
 ```
 [2024-01-01 12:00:00] [INFO] POST /api/user/login
   User: admin
@@ -267,7 +296,7 @@ POST /api/user/login 200 45ms
   Response: { status: 200, msg: 'success', data: {...} }
 ```
 
-#### Server_Chartermate
+#### CharterMate
 ```
 2024-01-01 12:00:00 | INFO     | 收到请求: GET /api/v1/health
 2024-01-01 12:00:00 | INFO     | 返回响应: {"status":"ok","service":"CharterMate"}
@@ -313,10 +342,10 @@ taskkill /F /IM python.exe
 # 检查 Client
 curl http://localhost:3001
 
-# 检查 Server
+# 检查 Core Service
 curl http://localhost:3002/api/health
 
-# 检查 Server_Chartermate
+# 检查 CharterMate
 curl http://localhost:8000/api/v1/health
 ```
 
@@ -336,3 +365,19 @@ curl http://localhost:8000/api/v1/health
 2. 参考本文档的常见问题部分
 3. 检查依赖是否正确安装
 4. 确认端口未被占用
+
+## 📌 扩展说明
+
+未来添加新的业务服务时，只需在 `services/` 目录下创建新的服务目录即可：
+
+```
+services/
+├── core/              # 核心服务（用户、权限、数据库）
+├── chartermate/       # CharterMate 问答服务
+├── analytics/         # 数据分析服务（新增）
+├── notifications/     # 通知服务（新增）
+├── payment/           # 支付服务（新增）
+└── gateway/           # API 网关（可选）
+```
+
+每个服务保持独立的代码结构、依赖管理和部署配置。

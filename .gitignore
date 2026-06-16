@@ -22,18 +22,18 @@ Thumbs.db
 
 # 编译产物
 client/dist/
-server/dist/
+services/core/dist/
 
 # 数据库文件
-server/data/*.db
-server/data/*.db-shm
-server/data/*.db-wal
+services/core/data/*.db
+services/core/data/*.db-shm
+services/core/data/*.db-wal
 
 # 临时脚本
-server/assign-admin.js
+services/core/assign-admin.js
 
 # 嵌入式仓库（独立管理的子项目）
-server_chartermate/
+services/chartermate/
 
 # Python 虚拟环境
 venv/
