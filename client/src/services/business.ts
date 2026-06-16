@@ -3,22 +3,37 @@
  * 使用业务服务器（Python Server）
  */
 
-import { businessRequest } from '../utils/request';
+import { chartermateRequest } from '../utils/request';
 import { BUSINESS_API } from './constants';
 import type { ApiResponse, ServiceHealth, BusinessUser } from './types';
 
 /**
  * 检查业务服务健康状态
+ * CharterMate 返回格式: {status: "ok", service: "CharterMate"}
+ * 不使用 ApiResponse 包装格式
  */
-export async function checkBusinessHealth(): Promise<ApiResponse<ServiceHealth>> {
-  return businessRequest<ServiceHealth>(BUSINESS_API.SYSTEM.HEALTH);
+export async function checkBusinessHealth(): Promise<ServiceHealth> {
+  try {
+    const path = BUSINESS_API.SYSTEM.HEALTH;
+    
+    // 开发环境使用相对路径（通过 Vite 代理）
+    const url = import.meta.env.DEV ? path : 
+      `${import.meta.env.VITE_SERVER_CHARTERMATE_URL || 'http://localhost:8000'}${path}`;
+    
+    const response = await fetch(url);
+    const data = await response.json() as ServiceHealth;
+    return data;
+  } catch (error) {
+    console.error('检查 CharterMate 服务状态失败', error);
+    return { status: 'error', service: 'charter_mate' };
+  }
 }
 
 /**
  * 获取业务服务器用户列表
  */
 export async function getBusinessUsers(): Promise<ApiResponse<BusinessUser[]>> {
-  return businessRequest<BusinessUser[]>(BUSINESS_API.USER.LIST);
+  return chartermateRequest<BusinessUser[]>(BUSINESS_API.USER.LIST);
 }
 
 /**
@@ -27,7 +42,7 @@ export async function getBusinessUsers(): Promise<ApiResponse<BusinessUser[]>> {
 export async function getBusinessDatabaseStats(): Promise<
   ApiResponse<{ table_count: number; db_size: number; db_type: string }>
 > {
-  return businessRequest<{ table_count: number; db_size: number; db_type: string }>(
+  return chartermateRequest<{ table_count: number; db_size: number; db_type: string }>(
     BUSINESS_API.DATABASE.STATS
   );
 }
@@ -38,7 +53,7 @@ export async function getBusinessDatabaseStats(): Promise<
 export async function getBusinessTables(): Promise<
   ApiResponse<Array<{ name: string; rows: number }>>
 > {
-  return businessRequest<Array<{ name: string; rows: number }>>(
+  return chartermateRequest<Array<{ name: string; rows: number }>>(
     BUSINESS_API.DATABASE.TABLES
   );
 }
@@ -49,7 +64,7 @@ export async function getBusinessTables(): Promise<
 export async function getBusinessTableStructure(
   tableName: string
 ): Promise<ApiResponse<{ table_name: string; columns: any[] }>> {
-  return businessRequest<{ table_name: string; columns: any[] }>(
+  return chartermateRequest<{ table_name: string; columns: any[] }>(
     BUSINESS_API.DATABASE.GET_TABLE_STRUCTURE(tableName)
   );
 }
@@ -70,7 +85,7 @@ export async function getBusinessTableData(
     total: number;
   }>
 > {
-  return businessRequest<{
+  return chartermateRequest<{
     table_name: string;
     data: any[];
     page: number;
@@ -85,7 +100,7 @@ export async function getBusinessTableData(
 export async function executeBusinessQuery(
   query: string
 ): Promise<ApiResponse<{ result: any[] }>> {
-  return businessRequest<{ result: any[] }>(BUSINESS_API.DATABASE.QUERY, {
+  return chartermateRequest<{ result: any[] }>(BUSINESS_API.DATABASE.QUERY, {
     method: 'POST',
     body: { query },
   });
