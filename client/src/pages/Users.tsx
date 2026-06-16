@@ -2,30 +2,35 @@
  * 用户管理页面
  */
 
-import { useState, useEffect } from 'react';
 import {
-  Card,
-  Table,
+  EditOutlined,
+  PlusOutlined,
+  ReloadOutlined,
+  UserOutlined,
+} from "@ant-design/icons";
+import {
   Button,
-  Space,
-  message,
-  Modal,
+  Card,
   Form,
   Input,
-  Tag,
-  Select,
+  message,
+  Modal,
   Popconfirm,
-} from 'antd';
+  Select,
+  Space,
+  Table,
+  Tag,
+} from "antd";
+import { useEffect, useState } from "react";
+import { usePermission } from "../contexts/PermissionContext";
+import type { Role } from "../services/core";
 import {
-  UserOutlined,
-  PlusOutlined,
-  EditOutlined,
-  ReloadOutlined,
-} from '@ant-design/icons';
-import { usePermission } from '../contexts/PermissionContext';
-import { getAllRoles, register, changePassword, updateUserStatus } from '../services/core';
-import type { Role } from '../services/core';
-import { UserStatus } from '../types';
+  changePassword,
+  getAllRoles,
+  register,
+  updateUserStatus,
+} from "../services/core";
+import { UserStatus } from "../types";
 
 interface User {
   id: number;
@@ -48,7 +53,7 @@ function UserManagement() {
   const [editModalData, setEditModalData] = useState<EditModalData>({
     visible: false,
     userId: 0,
-    username: '',
+    username: "",
   });
   const [roles, setRoles] = useState<Role[]>([]);
   const [addForm] = Form.useForm();
@@ -59,21 +64,20 @@ function UserManagement() {
   const loadUsers = async () => {
     setLoading(true);
     try {
-      const response = await fetch('/api/database/tables/users/data');
-      const result = await response.json();
+      const response = await getUserList();
 
-      if (result.code === 200) {
+      if (response.status === 200) {
         // 确保每个用户都有默认状态
-        const usersWithStatus = (result.data?.rows || []).map((user: any) => ({
+        const usersWithStatus = (response.data || []).map((user: UserInfo) => ({
           ...user,
           status: user.status || UserStatus.ACTIVE,
         }));
         setUsers(usersWithStatus);
       } else {
-        message.error(result.message);
+        message.error(response.msg || "加载用户列表失败");
       }
     } catch (error) {
-      message.error('加载用户列表失败');
+      message.error("加载用户列表失败");
     } finally {
       setLoading(false);
     }
@@ -87,7 +91,7 @@ function UserManagement() {
         setRoles(response.data || []);
       }
     } catch (error) {
-      console.error('加载角色列表失败', error);
+      console.error("加载角色列表失败", error);
     }
   };
 
@@ -98,14 +102,19 @@ function UserManagement() {
 
   // 获取可选角色（管理员可以选择developer和user，其他角色不能添加用户）
   const getAvailableRoles = () => {
-    if (can('create', 'User')) {
-      return roles.filter((r) => r.name !== 'admin');
+    if (can("create", "User")) {
+      return roles.filter((r) => r.name !== "admin");
     }
     return [];
   };
 
   // 添加用户
-  const handleAddUser = async (values: { username: string; password: string; email?: string; roleId: number }) => {
+  const handleAddUser = async (values: {
+    username: string;
+    password: string;
+    email?: string;
+    roleId: number;
+  }) => {
     try {
       const response = await register({
         username: values.username,
@@ -115,7 +124,7 @@ function UserManagement() {
       });
 
       if (response.status === 200) {
-        message.success('用户添加成功');
+        message.success("用户添加成功");
         setAddModalVisible(false);
         addForm.resetFields();
         loadUsers();
@@ -123,7 +132,7 @@ function UserManagement() {
         message.error(response.msg);
       }
     } catch (error) {
-      message.error('添加用户失败');
+      message.error("添加用户失败");
     }
   };
 
@@ -142,59 +151,61 @@ function UserManagement() {
     try {
       const result = await changePassword({
         username: editModalData.username,
-        oldPassword: 'temp', // 管理员修改不需要原密码
+        oldPassword: "temp", // 管理员修改不需要原密码
         newPassword: values.newPassword,
         force: true, // 强制修改标志
       });
 
       if (result.status === 200) {
-        message.success('密码修改成功');
-        setEditModalData({ visible: false, userId: 0, username: '' });
+        message.success("密码修改成功");
+        setEditModalData({ visible: false, userId: 0, username: "" });
         editForm.resetFields();
         loadUsers();
       } else {
         message.error(result.msg);
       }
     } catch (error) {
-      message.error('修改密码失败');
+      message.error("修改密码失败");
     }
   };
 
-  
-
   // 切换用户状态
-  const handleToggleStatus = async (userId: number, username: string, checked: boolean) => {
+  const handleToggleStatus = async (
+    userId: number,
+    username: string,
+    checked: boolean,
+  ) => {
     try {
       const newStatus = checked ? UserStatus.ACTIVE : UserStatus.INACTIVE;
       const result = await updateUserStatus({ userId, status: newStatus });
 
       if (result.status === 200) {
-        message.success(`用户 ${username} ${checked ? '已启用' : '已停用'}`);
+        message.success(`用户 ${username} ${checked ? "已启用" : "已停用"}`);
         loadUsers();
       } else {
         message.error(result.msg);
       }
     } catch (error) {
-      message.error('更新状态失败');
+      message.error("更新状态失败");
     }
   };
 
   // 判断用户是否为管理员
   const isAdmin = (username: string) => {
-    return username === 'Sra' || username === 'admin';
+    return username === "Sra" || username === "admin";
   };
 
   const columns = [
     {
-      title: 'ID',
-      dataIndex: 'id',
-      key: 'id',
+      title: "ID",
+      dataIndex: "id",
+      key: "id",
       width: 80,
     },
     {
-      title: '用户名',
-      dataIndex: 'username',
-      key: 'username',
+      title: "用户名",
+      dataIndex: "username",
+      key: "username",
       render: (text: string) => (
         <Space>
           <UserOutlined />
@@ -204,9 +215,9 @@ function UserManagement() {
       ),
     },
     {
-      title: '状态',
-      dataIndex: 'status',
-      key: 'status',
+      title: "状态",
+      dataIndex: "status",
+      key: "status",
       width: 120,
       render: (status: UserStatus) => {
         return status === UserStatus.ACTIVE ? (
@@ -217,32 +228,33 @@ function UserManagement() {
       },
     },
     {
-      title: '邮箱',
-      dataIndex: 'email',
-      key: 'email',
-      render: (text: string | null) => text || <Tag color="default">未设置</Tag>,
+      title: "邮箱",
+      dataIndex: "email",
+      key: "email",
+      render: (text: string | null) =>
+        text || <Tag color="default">未设置</Tag>,
     },
     {
-      title: '创建时间',
-      dataIndex: 'created_at',
-      key: 'created_at',
-      render: (text: string) => new Date(text).toLocaleString('zh-CN'),
+      title: "创建时间",
+      dataIndex: "created_at",
+      key: "created_at",
+      render: (text: string) => new Date(text).toLocaleString("zh-CN"),
     },
     {
-      title: '操作',
-      key: 'action',
+      title: "操作",
+      key: "action",
       width: 200,
       render: (_: unknown, record: User) => {
         const isAdminUser = isAdmin(record.username);
-        
+
         // 只有管理员可以编辑用户
-        if (!can('update', 'User')) {
+        if (!can("update", "User")) {
           return null;
         }
 
         // 根据当前状态显示启用或停用按钮
         const isActive = record.status === UserStatus.ACTIVE;
-        
+
         return (
           <Space>
             <Button
@@ -254,16 +266,15 @@ function UserManagement() {
             </Button>
             {!isAdminUser && (
               <Popconfirm
-                title={`确定${isActive ? '停用' : '启用'}用户 ${record.username}？${isActive ? '停用后用户将无法登录' : '启用后用户可以正常登录'}`}
+                title={`确定${isActive ? "停用" : "启用"}用户 ${record.username}？${isActive ? "停用后用户将无法登录" : "启用后用户可以正常登录"}`}
                 okText="确定"
                 cancelText="取消"
-                onConfirm={() => handleToggleStatus(record.id, record.username, !isActive)}
+                onConfirm={() =>
+                  handleToggleStatus(record.id, record.username, !isActive)
+                }
               >
-                <Button
-                  type="link"
-                  danger={isActive}
-                >
-                  {isActive ? '停用' : '启用'}
+                <Button type="link" danger={isActive}>
+                  {isActive ? "停用" : "启用"}
                 </Button>
               </Popconfirm>
             )}
@@ -278,17 +289,18 @@ function UserManagement() {
   return (
     <div>
       <Card
-        title={<><UserOutlined /> 用户管理</>}
+        title={
+          <>
+            <UserOutlined /> 用户管理
+          </>
+        }
         extra={
           <Space>
-            <Button
-              icon={<ReloadOutlined />}
-              onClick={loadUsers}
-            >
+            <Button icon={<ReloadOutlined />} onClick={loadUsers}>
               刷新
             </Button>
             {/* 只有管理员可以添加用户 */}
-            {can('create', 'User') && (
+            {can("create", "User") && (
               <Button
                 type="primary"
                 icon={<PlusOutlined />}
@@ -324,27 +336,24 @@ function UserManagement() {
           <Form.Item
             name="username"
             label="用户名"
-            rules={[{ required: true, message: '请输入用户名' }]}
+            rules={[{ required: true, message: "请输入用户名" }]}
           >
             <Input placeholder="请输入用户名" />
           </Form.Item>
           <Form.Item
             name="password"
             label="密码"
-            rules={[{ required: true, message: '请输入密码' }]}
+            rules={[{ required: true, message: "请输入密码" }]}
           >
             <Input.Password placeholder="请输入密码" />
           </Form.Item>
-          <Form.Item
-            name="email"
-            label="邮箱"
-          >
+          <Form.Item name="email" label="邮箱">
             <Input placeholder="请输入邮箱" />
           </Form.Item>
           <Form.Item
             name="roleId"
             label="角色"
-            rules={[{ required: true, message: '请选择角色' }]}
+            rules={[{ required: true, message: "请选择角色" }]}
           >
             <Select placeholder="请选择角色">
               {availableRoles.map((role) => (
@@ -361,7 +370,9 @@ function UserManagement() {
       <Modal
         title={`修改用户 ${editModalData.username} 的密码`}
         open={editModalData.visible}
-        onCancel={() => setEditModalData({ visible: false, userId: 0, username: '' })}
+        onCancel={() =>
+          setEditModalData({ visible: false, userId: 0, username: "" })
+        }
         onOk={() => {
           editForm.validateFields().then((values) => {
             handleEditUser(values);
@@ -373,8 +384,8 @@ function UserManagement() {
             name="newPassword"
             label="新密码"
             rules={[
-              { required: true, message: '请输入新密码' },
-              { min: 6, message: '密码长度至少6位' },
+              { required: true, message: "请输入新密码" },
+              { min: 6, message: "密码长度至少6位" },
             ]}
           >
             <Input.Password placeholder="请输入新密码" />
@@ -382,15 +393,15 @@ function UserManagement() {
           <Form.Item
             name="confirmPassword"
             label="确认密码"
-            dependencies={['newPassword']}
+            dependencies={["newPassword"]}
             rules={[
-              { required: true, message: '请确认密码' },
+              { required: true, message: "请确认密码" },
               ({ getFieldValue }) => ({
                 validator(_, value) {
-                  if (!value || getFieldValue('newPassword') === value) {
+                  if (!value || getFieldValue("newPassword") === value) {
                     return Promise.resolve();
                   }
-                  return Promise.reject(new Error('两次输入的密码不一致'));
+                  return Promise.reject(new Error("两次输入的密码不一致"));
                 },
               }),
             ]}

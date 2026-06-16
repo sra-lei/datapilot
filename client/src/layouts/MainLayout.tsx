@@ -2,62 +2,73 @@
  * 主布局组件
  */
 
-import { Layout, Menu, Avatar, Dropdown, Space } from 'antd';
-import type { MenuProps } from 'antd';
 import {
+  BulbOutlined,
   DashboardOutlined,
-  UserOutlined,
   FileTextOutlined,
-  SettingOutlined,
-  SafetyCertificateOutlined,
-  UserSwitchOutlined,
   LogoutOutlined,
-} from '@ant-design/icons';
-import { useState } from 'react';
-import { Outlet, useNavigate } from 'react-router-dom';
-import { usePermission } from '../contexts/PermissionContext';
+  SafetyCertificateOutlined,
+  SettingOutlined,
+  UserOutlined,
+  UserSwitchOutlined,
+} from "@ant-design/icons";
+import type { MenuProps } from "antd";
+import { Avatar, Dropdown, Layout, Menu, Space, Switch, Tooltip } from "antd";
+import { useEffect, useState } from "react";
+import { Outlet, useNavigate } from "react-router-dom";
+import { usePermission } from "../contexts/PermissionContext";
 
 const { Header, Sider, Content } = Layout;
 
 function MainLayout() {
   const [collapsed, setCollapsed] = useState(false);
+  const [isDarkMode, setIsDarkMode] = useState(() => {
+    const savedTheme = localStorage.getItem("theme");
+    return savedTheme === "dark";
+  });
   const navigate = useNavigate();
   const { can } = usePermission();
 
+  // 主题切换
+  useEffect(() => {
+    localStorage.setItem("theme", isDarkMode ? "dark" : "light");
+    document.body.setAttribute("data-theme", isDarkMode ? "dark" : "light");
+  }, [isDarkMode]);
+
   const allMenuItems = [
     {
-      key: '/dashboard',
+      key: "/dashboard",
       icon: <DashboardOutlined />,
-      label: '仪表盘',
+      label: "仪表盘",
       permission: null, // 所有人可见
     },
     {
-      key: '/users',
+      key: "/users",
       icon: <UserOutlined />,
-      label: '用户管理',
-      permission: { action: 'read', subject: 'User' },
+      label: "用户管理",
+      permission: { action: "read", subject: "User" },
     },
     {
-      key: '/permissions',
+      key: "/permissions",
       icon: <SafetyCertificateOutlined />,
-      label: '权限管理',
-      permission: { action: 'read', subject: 'Role' },
+      label: "权限管理",
+      permission: { action: "read", subject: "Role" },
     },
     {
-      key: 'settings-group',
+      key: "settings-group",
       icon: <SettingOutlined />,
-      label: '系统设置',
-      permission: { action: 'manage', subject: 'Settings' },
+      label: "系统设置",
+      permission: { action: "manage", subject: "Settings" },
       children: [
         {
-          key: '/database',
+          key: "/database",
           icon: <FileTextOutlined />,
-          label: '数据库管理',
+          label: "数据库管理",
         },
         {
-          key: '/settings',
+          key: "/settings",
           icon: <SettingOutlined />,
-          label: '其它设置',
+          label: "CharterMate",
         },
       ],
     },
@@ -94,69 +105,71 @@ function MainLayout() {
   // 获取用户信息
   const getUserInfo = () => {
     try {
-      const userStr = localStorage.getItem('user');
+      const userStr = localStorage.getItem("user");
       if (userStr) {
         return JSON.parse(userStr);
       }
     } catch (error) {
-      console.error('获取用户信息失败', error);
+      console.error("获取用户信息失败", error);
     }
     return null;
   };
 
   const userInfo = getUserInfo();
-  const username = userInfo?.username || '用户';
+  const username = userInfo?.username || "用户";
 
   // 用户下拉菜单
-  const userMenuItems: MenuProps['items'] = [
+  const userMenuItems: MenuProps["items"] = [
     {
-      key: 'profile',
+      key: "profile",
       icon: <UserSwitchOutlined />,
-      label: '个人资料',
-      onClick: () => navigate('/profile'),
+      label: "个人资料",
+      onClick: () => navigate("/profile"),
     },
     {
-      type: 'divider',
+      type: "divider",
     },
     {
-      key: 'logout',
+      key: "logout",
       icon: <LogoutOutlined />,
-      label: '退出登录',
+      label: "退出登录",
       danger: true,
       onClick: () => {
-        localStorage.removeItem('user');
-        localStorage.removeItem('currentUser');
-        localStorage.removeItem('token');
-        navigate('/login');
+        localStorage.removeItem("user");
+        localStorage.removeItem("currentUser");
+        localStorage.removeItem("token");
+        navigate("/login");
       },
     },
   ];
 
   return (
-    <Layout style={{ minHeight: '100vh' }}>
+    <Layout style={{ minHeight: "100vh" }}>
       <Sider
         collapsible
         collapsed={collapsed}
         onCollapse={setCollapsed}
         style={{
-          background: '#001529',
+          background: "#001529",
         }}
       >
-        <div style={{
-          height: 64,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          color: 'white',
-          fontSize: collapsed ? '16px' : '18px',
-          fontWeight: 'bold',
-        }}>
+        <div
+          style={{
+            height: 64,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            color: "white",
+            fontSize: collapsed ? "16px" : "18px",
+            fontWeight: "bold",
+          }}
+        >
           Trae
         </div>
         <Menu
           theme="dark"
           mode="inline"
-          defaultSelectedKeys={['/dashboard']}
+          defaultSelectedKeys={["/dashboard"]}
           items={menuItems}
           onClick={handleMenuClick}
         />
@@ -164,16 +177,26 @@ function MainLayout() {
       <Layout>
         <Header
           style={{
-            background: '#fff',
-            padding: '0 24px',
-            boxShadow: '0 1px 4px rgba(0, 0, 0, 0.1)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'flex-end',
+            background: "#fff",
+            padding: "0 24px",
+            boxShadow: "0 1px 4px rgba(0, 0, 0, 0.1)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "flex-end",
           }}
         >
+          <Space size="middle" style={{ marginRight: 16 }}>
+            <Tooltip title={isDarkMode ? "切换到浅色模式" : "切换到深色模式"}>
+              <Switch
+                checked={isDarkMode}
+                onChange={setIsDarkMode}
+                checkedChildren={<BulbOutlined />}
+                unCheckedChildren={<BulbOutlined />}
+              />
+            </Tooltip>
+          </Space>
           <Dropdown menu={{ items: userMenuItems }} placement="bottomRight">
-            <Space style={{ cursor: 'pointer' }}>
+            <Space style={{ cursor: "pointer" }}>
               <span>{username}</span>
               <Avatar icon={<UserOutlined />} />
             </Space>
@@ -181,10 +204,10 @@ function MainLayout() {
         </Header>
         <Content
           style={{
-            margin: '24px 16px',
+            margin: "24px 16px",
             padding: 24,
             minHeight: 280,
-            background: '#f0f2f5',
+            background: "#f0f2f5",
           }}
         >
           <Outlet />
