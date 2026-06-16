@@ -1,9 +1,10 @@
 /**
  * 统一请求工具
  * 支持从多个服务器获取数据
+ * 开发环境使用 Vite 代理，生产环境使用环境变量配置的 URL
  */
 
-import { ServerType, getServerUrl } from '../config';
+import { ServerType } from '../config';
 import type { ApiResponse } from '../services/types';
 
 // 请求配置接口
@@ -24,6 +25,26 @@ const defaultConfig: RequestConfig = {
 };
 
 /**
+ * 获取请求 URL
+ * 开发环境：使用相对路径（通过 Vite 代理）
+ * 生产环境：使用环境变量配置的完整 URL
+ */
+const getRequestUrl = (serverType: ServerType, path: string): string => {
+  // 开发环境使用相对路径（通过 Vite 代理）
+  if (import.meta.env.DEV) {
+    return path; // 直接返回相对路径，如 '/api/v1/health'
+  }
+  
+  // 生产环境使用完整 URL
+  const serverUrl = import.meta.env.VITE_SERVER_MAIN_URL || 'http://localhost:3002';
+  const businessUrl = import.meta.env.VITE_SERVER_BUSINESS_URL || 'http://localhost:8000';
+  
+  return serverType === ServerType.BUSINESS 
+    ? `${businessUrl}${path}` 
+    : `${serverUrl}${path}`;
+};
+
+/**
  * 发起请求
  * @param serverType 服务器类型
  * @param path API 路径
@@ -36,7 +57,7 @@ export async function request<T = unknown>(
   config: RequestConfig = {}
 ): Promise<ApiResponse<T>> {
   const mergedConfig: RequestConfig = { ...defaultConfig, ...config };
-  const url = `${getServerUrl(serverType)}${path}`;
+  const url = getRequestUrl(serverType, path);
 
   try {
     const controller = new AbortController();
