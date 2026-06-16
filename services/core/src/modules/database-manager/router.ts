@@ -13,7 +13,7 @@ const router = Router();
 
 /**
  * @swagger
- * /api/database/tables:
+ * /core/database/tables:
  *   get:
  *     summary: 获取所有表
  *     tags: [数据库管理]
@@ -38,7 +38,7 @@ router.get('/tables', (req, res) => databaseManagerController.getTables(req, res
 
 /**
  * @swagger
- * /api/database/tables/{name}/info:
+ * /core/database/tables/{name}/info:
  *   get:
  *     summary: 获取表结构
  *     tags: [数据库管理]
@@ -56,7 +56,7 @@ router.get('/tables/:name/info', (req, res) => databaseManagerController.getTabl
 
 /**
  * @swagger
- * /api/database/tables/{name}/data:
+ * /core/database/tables/{name}/data:
  *   get:
  *     summary: 获取表数据
  *     tags: [数据库管理]
@@ -84,7 +84,7 @@ router.get('/tables/:name/data', (req, res) => databaseManagerController.getTabl
 
 /**
  * @swagger
- * /api/database/query:
+ * /core/database/query:
  *   post:
  *     summary: 执行SQL查询
  *     tags: [数据库管理]
@@ -110,7 +110,7 @@ router.post('/query', (req, res) => databaseManagerController.executeQuery(req, 
 
 /**
  * @swagger
- * /api/database/stats:
+ * /core/database/stats:
  *   get:
  *     summary: 获取数据库统计信息
  *     tags: [数据库管理]

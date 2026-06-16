@@ -25,7 +25,7 @@ export const swaggerPaths = {
     },
   },
 
-  '/api/health': {
+  '/core/health': {
     get: {
       summary: '健康检查',
       tags: ['系统'],
@@ -54,7 +54,7 @@ export const swaggerPaths = {
     },
   },
 
-  '/api/user/login': {
+  '/core/user/login': {
     post: {
       tags: ['用户管理'],
       summary: '用户登录',
@@ -103,7 +103,7 @@ export const swaggerPaths = {
     },
   },
 
-  '/api/user/register': {
+  '/core/user/register': {
     post: {
       tags: ['用户管理'],
       summary: '用户注册',
@@ -131,7 +131,7 @@ export const swaggerPaths = {
     },
   },
 
-  '/api/user/change-password': {
+  '/core/user/change-password': {
     post: {
       tags: ['用户管理'],
       summary: '修改密码',
@@ -163,7 +163,7 @@ export const swaggerPaths = {
     },
   },
 
-  '/api/user/list': {
+  '/core/user/list': {
     get: {
       tags: ['用户管理'],
       summary: '获取用户列表',
@@ -200,7 +200,7 @@ export const swaggerPaths = {
     },
   },
 
-  '/api/user/status': {
+  '/core/user/status': {
     put: {
       tags: ['用户管理'],
       summary: '更新用户状态',
@@ -231,7 +231,7 @@ export const swaggerPaths = {
     },
   },
 
-  '/api/user/{id}': {
+  '/core/user/{id}': {
     delete: {
       tags: ['用户管理'],
       summary: '删除用户（软删除）',
@@ -252,7 +252,7 @@ export const swaggerPaths = {
     },
   },
 
-  '/api/permission/permissions': {
+  '/core/permission/permissions': {
     get: {
       tags: ['权限管理'],
       summary: '获取所有权限列表',
@@ -309,7 +309,7 @@ export const swaggerPaths = {
     },
   },
 
-  '/api/permission/permissions/{id}': {
+  '/core/permission/permissions/{id}': {
     delete: {
       tags: ['权限管理'],
       summary: '删除权限',
@@ -329,7 +329,7 @@ export const swaggerPaths = {
     },
   },
 
-  '/api/permission/roles': {
+  '/core/permission/roles': {
     get: {
       tags: ['权限管理'],
       summary: '获取所有角色列表',
@@ -362,7 +362,7 @@ export const swaggerPaths = {
     },
   },
 
-  '/api/permission/roles/{id}': {
+  '/core/permission/roles/{id}': {
     get: {
       tags: ['权限管理'],
       summary: '获取角色详情（包括权限）',
@@ -430,7 +430,7 @@ export const swaggerPaths = {
     },
   },
 
-  '/api/permission/roles/{id}/permissions': {
+  '/core/permission/roles/{id}/permissions': {
     post: {
       tags: ['权限管理'],
       summary: '为角色授予权限',
@@ -486,7 +486,7 @@ export const swaggerPaths = {
     },
   },
 
-  '/api/permission/users/{userId}/roles': {
+  '/core/permission/users/{userId}/roles': {
     post: {
       tags: ['权限管理'],
       summary: '为用户分配角色',
@@ -542,7 +542,7 @@ export const swaggerPaths = {
     },
   },
 
-  '/api/permission/users/{userId}/permissions': {
+  '/core/permission/users/{userId}/permissions': {
     get: {
       tags: ['权限管理'],
       summary: '获取用户的角色和权限',
@@ -593,7 +593,7 @@ export const swaggerPaths = {
     },
   },
 
-  '/api/database/tables': {
+  '/core/database/tables': {
     get: {
       tags: ['数据库管理'],
       summary: '获取所有表',
@@ -620,7 +620,7 @@ export const swaggerPaths = {
     },
   },
 
-  '/api/database/tables/{name}/info': {
+  '/core/database/tables/{name}/info': {
     get: {
       tags: ['数据库管理'],
       summary: '获取表结构',
@@ -640,7 +640,7 @@ export const swaggerPaths = {
     },
   },
 
-  '/api/database/tables/{name}/data': {
+  '/core/database/tables/{name}/data': {
     get: {
       tags: ['数据库管理'],
       summary: '获取表数据',
@@ -666,7 +666,7 @@ export const swaggerPaths = {
     },
   },
 
-  '/api/database/query': {
+  '/core/database/query': {
     post: {
       tags: ['数据库管理'],
       summary: '执行 SQL 查询',
@@ -691,7 +691,7 @@ export const swaggerPaths = {
     },
   },
 
-  '/api/database/stats': {
+  '/core/database/stats': {
     get: {
       tags: ['数据库管理'],
       summary: '获取数据库统计信息',

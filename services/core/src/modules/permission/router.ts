@@ -13,7 +13,7 @@ const router = Router();
 
 /**
  * @swagger
- * /api/permission/permissions:
+ * /core/permission/permissions:
  *   get:
  *     summary: 获取所有权限
  *     tags: [权限管理]
@@ -60,7 +60,7 @@ router.post('/permissions', (req, res) => permissionController.createPermission(
 
 /**
  * @swagger
- * /api/permission/permissions/{id}:
+ * /core/permission/permissions/{id}:
  *   delete:
  *     summary: 删除权限
  *     tags: [权限管理]
@@ -80,7 +80,7 @@ router.delete('/permissions/:id', (req, res) => permissionController.deletePermi
 
 /**
  * @swagger
- * /api/permission/roles:
+ * /core/permission/roles:
  *   get:
  *     summary: 获取所有角色
  *     tags: [权限管理]
@@ -127,7 +127,7 @@ router.post('/roles', (req, res) => permissionController.createRole(req, res));
 
 /**
  * @swagger
- * /api/permission/roles/{id}:
+ * /core/permission/roles/{id}:
  *   get:
  *     summary: 获取角色详情（包含权限）
  *     tags: [权限管理]
@@ -186,7 +186,7 @@ router.delete('/roles/:id', (req, res) => permissionController.deleteRole(req, r
 
 /**
  * @swagger
- * /api/permission/roles/{id}/permissions:
+ * /core/permission/roles/{id}/permissions:
  *   post:
  *     summary: 为角色分配权限
  *     tags: [权限管理]
@@ -217,7 +217,7 @@ router.post('/roles/:id/permissions', (req, res) => permissionController.grantPe
 
 /**
  * @swagger
- * /api/permission/roles/{roleId}/permissions/{permissionId}:
+ * /core/permission/roles/{roleId}/permissions/{permissionId}:
  *   delete:
  *     summary: 移除角色权限
  *     tags: [权限管理]
@@ -242,7 +242,7 @@ router.delete('/roles/:roleId/permissions/:permissionId', (req, res) => permissi
 
 /**
  * @swagger
- * /api/permission/users/{userId}/roles:
+ * /core/permission/users/{userId}/roles:
  *   post:
  *     summary: 为用户分配角色
  *     tags: [权限管理]
@@ -273,7 +273,7 @@ router.post('/users/:userId/roles', (req, res) => permissionController.assignRol
 
 /**
  * @swagger
- * /api/permission/users/{userId}/roles/{roleId}:
+ * /core/permission/users/{userId}/roles/{roleId}:
  *   delete:
  *     summary: 移除用户角色
  *     tags: [权限管理]
@@ -298,7 +298,7 @@ router.delete('/users/:userId/roles/:roleId', (req, res) => permissionController
 
 /**
  * @swagger
- * /api/permission/users/{userId}/permissions:
+ * /core/permission/users/{userId}/permissions:
  *   get:
  *     summary: 获取用户权限列表
  *     tags: [权限管理]

@@ -14,7 +14,7 @@ const router = Router();
 
 /**
  * @swagger
- * /api/user/register:
+ * /core/user/register:
  *   post:
  *     summary: 用户注册
  *     tags: [用户管理]
@@ -38,7 +38,7 @@ router.post('/register', register);
 
 /**
  * @swagger
- * /api/user/login:
+ * /core/user/login:
  *   post:
  *     summary: 用户登录
  *     tags: [用户管理]
@@ -64,7 +64,7 @@ router.post('/login', login);
 
 /**
  * @swagger
- * /api/user/change-password:
+ * /core/user/change-password:
  *   post:
  *     summary: 修改密码
  *     tags: [用户管理]
@@ -92,7 +92,7 @@ router.post('/change-password', changePassword);
 
 /**
  * @swagger
- * /api/user/{id}:
+ * /core/user/{id}:
  *   delete:
  *     summary: 删除用户（软删除）
  *     tags: [用户管理]
@@ -125,7 +125,7 @@ router.delete('/:id', requirePermission('user:delete'), deleteUser);
 
 /**
  * @swagger
- * /api/user/status:
+ * /core/user/status:
  *   put:
  *     summary: 更新用户状态
  *     tags: [用户管理]
