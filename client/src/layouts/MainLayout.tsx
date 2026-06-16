@@ -44,7 +44,7 @@ function MainLayout() {
       permission: { action: 'read', subject: 'Role' },
     },
     {
-      key: '/settings',
+      key: 'settings-group',
       icon: <SettingOutlined />,
       label: '系统设置',
       permission: { action: 'manage', subject: 'Settings' },
@@ -53,6 +53,11 @@ function MainLayout() {
           key: '/database',
           icon: <FileTextOutlined />,
           label: '数据库管理',
+        },
+        {
+          key: '/settings',
+          icon: <SettingOutlined />,
+          label: '其它设置',
         },
       ],
     },
