@@ -32,12 +32,6 @@ function MainLayout() {
       permission: null, // 所有人可见
     },
     {
-      key: '/database',
-      icon: <FileTextOutlined />,
-      label: '数据库管理',
-      permission: null, // 所有人可见
-    },
-    {
       key: '/users',
       icon: <UserOutlined />,
       label: '用户管理',
@@ -54,14 +48,39 @@ function MainLayout() {
       icon: <SettingOutlined />,
       label: '系统设置',
       permission: { action: 'manage', subject: 'Settings' },
+      children: [
+        {
+          key: '/database',
+          icon: <FileTextOutlined />,
+          label: '数据库管理',
+        },
+      ],
     },
   ];
 
-  // 根据权限过滤菜单
-  const menuItems = allMenuItems.filter((item) => {
-    if (!item.permission) return true;
-    return can(item.permission.action, item.permission.subject);
-  });
+  // 根据权限过滤菜单（支持子菜单）
+  const filterMenuItems = (items: any[]): any[] => {
+    return items
+      .filter((item) => {
+        // 如果没有权限要求，所有人都可见
+        if (!item.permission) return true;
+        // 检查权限
+        return can(item.permission.action, item.permission.subject);
+      })
+      .map((item) => {
+        // 如果有子菜单，递归过滤子菜单
+        if (item.children) {
+          const filteredChildren = filterMenuItems(item.children);
+          // 如果子菜单过滤后为空，返回 null（后续会过滤掉）
+          if (filteredChildren.length === 0) return null;
+          return { ...item, children: filteredChildren };
+        }
+        return item;
+      })
+      .filter(Boolean); // 过滤掉 null 值
+  };
+
+  const menuItems = filterMenuItems(allMenuItems);
 
   const handleMenuClick = ({ key }: { key: string }) => {
     navigate(key);
