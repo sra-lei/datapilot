@@ -45,11 +45,11 @@ function SystemSettings() {
 
     try {
       const result = await checkBusinessHealth();
-      // CharterMate 健康检查返回格式: {status: "ok", service: "CharterMate"}
-      if (result.status === 'ok') {
+      // 统一响应格式: {status: 200, msg: "...", data: {status: "ok", service: "CharterMate"}}
+      if (result.status === 200 && result.data) {
         setServiceStatus({
-          status: 'ok',
-          service: result.service || 'charter_mate',
+          status: result.data.status === 'ok' ? 'ok' : 'error',
+          service: result.data.service || 'charter_mate',
           lastCheck: new Date(),
         });
       } else {

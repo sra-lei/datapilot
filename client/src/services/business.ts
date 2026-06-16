@@ -9,24 +9,10 @@ import type { ApiResponse, ServiceHealth, BusinessUser } from './types';
 
 /**
  * 检查业务服务健康状态
- * CharterMate 返回格式: {status: "ok", service: "CharterMate"}
- * 不使用 ApiResponse 包装格式
+ * 返回格式与 Core Service 保持一致: {status: 200, msg: "...", data: {...}}
  */
-export async function checkBusinessHealth(): Promise<ServiceHealth> {
-  try {
-    const path = BUSINESS_API.SYSTEM.HEALTH;
-    
-    // 开发环境使用相对路径（通过 Vite 代理）
-    const url = import.meta.env.DEV ? path : 
-      `${import.meta.env.VITE_SERVER_CHARTERMATE_URL || 'http://localhost:8000'}${path}`;
-    
-    const response = await fetch(url);
-    const data = await response.json() as ServiceHealth;
-    return data;
-  } catch (error) {
-    console.error('检查 CharterMate 服务状态失败', error);
-    return { status: 'error', service: 'charter_mate' };
-  }
+export async function checkBusinessHealth(): Promise<ApiResponse<ServiceHealth>> {
+  return chartermateRequest<ServiceHealth>(BUSINESS_API.SYSTEM.HEALTH);
 }
 
 /**
