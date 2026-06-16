@@ -31,3 +31,11 @@ server/data/*.db-wal
 
 # 临时脚本
 server/assign-admin.js
+
+# 嵌入式仓库（独立管理的子项目）
+server_chartermate/
+
+# Python 虚拟环境
+venv/
+env/
+.venv/
