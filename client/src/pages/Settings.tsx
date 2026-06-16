@@ -6,7 +6,6 @@ import { useState, useEffect } from 'react';
 import {
   Card,
   Form,
-  Input,
   Select,
   Switch,
   Button,
@@ -19,21 +18,12 @@ import {
 } from 'antd';
 import {
   SettingOutlined,
-  DatabaseOutlined,
   SaveOutlined,
   CheckCircleOutlined,
   ReloadOutlined,
 } from '@ant-design/icons';
 
-import { getDatabaseStats } from '../services/database';
 import { checkBusinessHealth } from '../services/business';
-
-interface DatabaseStats {
-  tableCount: number;
-  totalRows: number;
-  dbFileSize: number;
-  dbFilePath: string;
-}
 
 interface ServiceStatus {
   status: 'ok' | 'error' | 'checking';
@@ -42,25 +32,12 @@ interface ServiceStatus {
 }
 
 function SystemSettings() {
-  const [stats, setStats] = useState<DatabaseStats | null>(null);
   const [serviceStatus, setServiceStatus] = useState<ServiceStatus>({
     status: 'checking',
     service: 'charter_mate',
     lastCheck: null,
   });
   const [form] = Form.useForm();
-
-  // 加载系统信息
-  const loadStats = async () => {
-    try {
-      const result = await getDatabaseStats();
-      if (result.status === 200 && result.data) {
-        setStats(result.data);
-      }
-    } catch (error) {
-      console.error('加载统计信息失败', error);
-    }
-  };
 
   // 检查业务服务状态
   const checkServiceStatus = async () => {
@@ -92,16 +69,8 @@ function SystemSettings() {
   };
 
   useEffect(() => {
-    loadStats();
     checkServiceStatus();
   }, []);
-
-  // 格式化文件大小
-  const formatFileSize = (bytes: number): string => {
-    if (bytes < 1024) return bytes + ' B';
-    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(2) + ' KB';
-    return (bytes / (1024 * 1024)).toFixed(2) + ' MB';
-  };
 
   const handleSave = () => {
     form.validateFields().then((values) => {
@@ -117,29 +86,10 @@ function SystemSettings() {
           form={form}
           layout="vertical"
           initialValues={{
-            dbType: 'sqlite',
             logLevel: 'info',
             theme: 'light',
           }}
         >
-          <Card type="inner" title="数据库配置" style={{ marginBottom: 16 }}>
-            <Form.Item
-              name="dbType"
-              label="数据库类型"
-            >
-              <Select>
-                <Select.Option value="sqlite">SQLite (开发环境)</Select.Option>
-                <Select.Option value="mysql">MySQL (生产环境)</Select.Option>
-              </Select>
-            </Form.Item>
-            <Form.Item
-              name="dbPath"
-              label="数据库路径"
-            >
-              <Input placeholder="数据库文件路径" disabled value={stats?.dbFilePath} />
-            </Form.Item>
-          </Card>
-
           <Card type="inner" title="系统配置" style={{ marginBottom: 16 }}>
             <Form.Item
               name="logLevel"
@@ -221,21 +171,6 @@ function SystemSettings() {
               : '未检查'}
           </Descriptions.Item>
         </Descriptions>
-      </Card>
-
-      <Divider />
-
-      <Card title={<><DatabaseOutlined /> 系统信息</>}>
-        {stats && (
-          <Descriptions column={2} bordered>
-            <Descriptions.Item label="数据库类型">SQLite</Descriptions.Item>
-            <Descriptions.Item label="数据库路径">{stats.dbFilePath}</Descriptions.Item>
-            <Descriptions.Item label="表数量">{stats.tableCount}</Descriptions.Item>
-            <Descriptions.Item label="总记录数">{stats.totalRows}</Descriptions.Item>
-            <Descriptions.Item label="数据库大小">{formatFileSize(stats.dbFileSize)}</Descriptions.Item>
-            <Descriptions.Item label="运行环境">开发环境</Descriptions.Item>
-          </Descriptions>
-        )}
       </Card>
     </div>
   );

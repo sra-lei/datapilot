@@ -16,6 +16,7 @@ import {
   Typography,
   Spin,
   Alert,
+  Divider,
 } from 'antd';
 import {
   DatabaseOutlined,
@@ -146,10 +147,16 @@ function DatabaseViewer() {
   return (
     <div style={{ padding: 0 }}>
       <Space direction="vertical" size="large" style={{ width: '100%' }}>
-        {/* 统计信息 */}
+        {/* 数据库配置和统计信息 */}
         {stats && (
-          <Card title={<><InfoCircleOutlined /> 数据库统计</>}>
+          <Card title={<><InfoCircleOutlined /> 数据库配置与统计</>}>
             <Descriptions column={4}>
+              <Descriptions.Item label="数据库类型">
+                <Tag color="purple">SQLite</Tag>
+              </Descriptions.Item>
+              <Descriptions.Item label="数据库路径">
+                <Text code copyable>{stats.dbFilePath}</Text>
+              </Descriptions.Item>
               <Descriptions.Item label="表数量">
                 <Tag color="blue">{stats.tableCount}</Tag>
               </Descriptions.Item>
@@ -159,16 +166,18 @@ function DatabaseViewer() {
               <Descriptions.Item label="文件大小">
                 <Tag color="orange">{formatFileSize(stats.dbFileSize)}</Tag>
               </Descriptions.Item>
-              <Descriptions.Item label="数据库路径">
-                <Text code copyable>{stats.dbFilePath}</Text>
+              <Descriptions.Item label="运行环境">
+                <Tag>开发环境</Tag>
               </Descriptions.Item>
             </Descriptions>
-            <div style={{ marginTop: 16 }}>
-              <Text strong>各表行数：</Text>
+            <Divider />
+            <Text strong>各表行数：</Text>
+            <div style={{ marginTop: 8 }}>
               {Object.entries(stats.tableStats).map(([table, count]) => (
                 <Tag
                   key={table}
                   style={{ marginLeft: 8, cursor: 'pointer' }}
+                  color="geekblue"
                   onClick={() => loadTableData(table)}
                 >
                   {table}: {count}
