@@ -8,23 +8,63 @@ echo.
 :: 设置项目根目录为脚本所在目录
 set "PROJECT_ROOT=%~dp0"
 
-:: 检查 Node.js
+:: ========================================
+:: 检测 Node.js
+:: ========================================
 node --version >nul 2>&1
 if errorlevel 1 (
-    echo [错误] 未安装 Node.js
+    echo [错误] 未检测到 Node.js，请先安装
+    echo 下载地址：https://nodejs.org/
     pause
     exit /b 1
 )
-echo [OK] Node.js 已安装
+for /f "tokens=*" %%a in ('node --version') do set "NODE_VER=%%a"
+echo [OK] Node.js %NODE_VER%
 
-:: 检查 Python
-python --version >nul 2>&1
-if errorlevel 1 (
-    echo [错误] 未安装 Python
-    pause
-    exit /b 1
+:: ========================================
+:: 检测 Python（优先使用项目 .venv，其次系统 Python）
+:: ========================================
+set "PYTHON_CMD="
+
+:: 1. 检查 CharterMate 项目自带的 .venv
+if exist "%~dp0services\chartermate\.venv\Scripts\python.exe" (
+    set "PYTHON_CMD=%~dp0services\chartermate\.venv\Scripts\python.exe"
+    for /f "tokens=*" %%a in ('"!PYTHON_CMD!" --version') do set "PYTHON_VER=%%a"
+    echo [OK] %PYTHON_VER% ^(CharterMate .venv^)
+    goto PYTHON_OK
 )
-echo [OK] Python 已安装
+
+:: 2. 检查系统 python 命令
+python --version >nul 2>&1
+if not errorlevel 1 (
+    set "PYTHON_CMD=python"
+    for /f "tokens=*" %%a in ('python --version') do set "PYTHON_VER=%%a"
+    echo [OK] %PYTHON_VER% ^(系统 Python^)
+    goto PYTHON_OK
+)
+
+:: 3. 检查 py 启动器
+py --version >nul 2>&1
+if not errorlevel 1 (
+    set "PYTHON_CMD=py"
+    for /f "tokens=*" %%a in ('py --version') do set "PYTHON_VER=%%a"
+    echo [OK] %PYTHON_VER% ^(py 启动器^)
+    goto PYTHON_OK
+)
+
+:: 都未找到
+echo [错误] 未检测到 Python，请先安装
+echo 下载地址：https://www.python.org/downloads/
+echo.
+echo 或者为 CharterMate 创建虚拟环境：
+echo   cd services\chartermate
+echo   python -m venv .venv
+echo   .venv\Scripts\activate.bat
+echo   pip install -r requirements.txt
+pause
+exit /b 1
+
+:PYTHON_OK
 
 echo.
 echo ========================================
@@ -65,10 +105,16 @@ timeout /t 3 /nobreak >nul
 echo [2/3] 启动 Core Service...
 start "Core - Express" cmd /k "cd /d "%~dp0services\core" && npm run dev"
 
-:: 启动 CharterMate Service
+:: 启动 CharterMate Service（使用 .venv 中的 Python）
 timeout /t 3 /nobreak >nul
 echo [3/3] 启动 CharterMate Service...
-start "CharterMate - FastAPI" cmd /k "cd /d "%~dp0services\chartermate" && python -m uvicorn app.main:app --reload --host 0.0.0.0 --port 8000"
+set "CHARTERMATE_VENV=%~dp0services\chartermate\.venv\Scripts\python.exe"
+if exist "%CHARTERMATE_VENV%" (
+    start "CharterMate - FastAPI" cmd /k "cd /d "%~dp0services\chartermate" && ""%CHARTERMATE_VENV%"" -m uvicorn app.main:app --reload --host 0.0.0.0 --port 8000"
+) else (
+    echo [警告] CharterMate .venv 未找到，尝试使用系统 Python...
+    start "CharterMate - FastAPI" cmd /k "cd /d "%~dp0services\chartermate" && python -m uvicorn app.main:app --reload --host 0.0.0.0 --port 8000"
+)
 
 echo.
 echo ========================================
@@ -112,7 +158,19 @@ goto END
 :CHARTERMATE
 echo.
 echo 启动 CharterMate Service...
-start "CharterMate - FastAPI" cmd /k "cd /d "%~dp0services\chartermate" && python -m uvicorn app.main:app --reload --host 0.0.0.0 --port 8000"
+set "CHARTERMATE_VENV=%~dp0services\chartermate\.venv\Scripts\python.exe"
+if exist "%CHARTERMATE_VENV%" (
+    start "CharterMate - FastAPI" cmd /k "cd /d "%~dp0services\chartermate" && ""%CHARTERMATE_VENV%"" -m uvicorn app.main:app --reload --host 0.0.0.0 --port 8000"
+    echo [OK] 使用 .venv 虚拟环境
+) else (
+    echo [警告] .venv 未找到，使用系统 Python
+echo   建议创建虚拟环境：
+echo     cd services\chartermate
+echo     python -m venv .venv
+echo     .venv\Scripts\activate.bat
+echo     pip install -r requirements.txt
+    start "CharterMate - FastAPI" cmd /k "cd /d "%~dp0services\chartermate" && python -m uvicorn app.main:app --reload --host 0.0.0.0 --port 8000"
+)
 echo.
 echo CharterMate Service 已启动
 echo 访问地址：http://localhost:8000
@@ -125,6 +183,7 @@ echo.
 echo 停止所有服务...
 taskkill /F /IM node.exe >nul 2>&1
 taskkill /F /IM python.exe >nul 2>&1
+taskkill /F /IM uvicorn.exe >nul 2>&1
 echo 所有服务已停止
 echo 按任意键退出...
 pause >nul
