@@ -5,6 +5,9 @@ echo    Trae 开发环境启动脚本
 echo ========================================
 echo.
 
+:: 设置项目根目录为脚本所在目录
+set "PROJECT_ROOT=%~dp0"
+
 :: 检查 Node.js
 node --version >nul 2>&1
 if errorlevel 1 (
@@ -55,17 +58,17 @@ echo.
 
 :: 启动 Client
 echo [1/3] 启动 Client...
-start "Client - Vite" cmd /k "cd /d e:\workspace\Trae\client && npm run dev"
+start "Client - Vite" cmd /k "cd /d "%~dp0client" && npm run dev"
 
 :: 启动 Core Service
 timeout /t 3 /nobreak >nul
 echo [2/3] 启动 Core Service...
-start "Core - Express" cmd /k "cd /d e:\workspace\Trae\services\core && npm run dev"
+start "Core - Express" cmd /k "cd /d "%~dp0services\core" && npm run dev"
 
 :: 启动 CharterMate Service
 timeout /t 3 /nobreak >nul
 echo [3/3] 启动 CharterMate Service...
-start "CharterMate - FastAPI" cmd /k "cd /d e:\workspace\Trae\services\chartermate && python -m uvicorn app.main:app --reload --host 0.0.0.0 --port 8000"
+start "CharterMate - FastAPI" cmd /k "cd /d "%~dp0services\chartermate" && python -m uvicorn app.main:app --reload --host 0.0.0.0 --port 8000"
 
 echo.
 echo ========================================
@@ -88,7 +91,7 @@ goto END
 :CLIENT
 echo.
 echo 启动 Client...
-start "Client - Vite" cmd /k "cd /d e:\workspace\Trae\client && npm run dev"
+start "Client - Vite" cmd /k "cd /d "%~dp0client" && npm run dev"
 echo.
 echo Client 已启动
 echo 访问地址：http://localhost:3001
@@ -98,7 +101,7 @@ goto END
 :CORE
 echo.
 echo 启动 Core Service...
-start "Core - Express" cmd /k "cd /d e:\workspace\Trae\services\core && npm run dev"
+start "Core - Express" cmd /k "cd /d "%~dp0services\core" && npm run dev"
 echo.
 echo Core Service 已启动
 echo 访问地址：http://localhost:3002
@@ -109,7 +112,7 @@ goto END
 :CHARTERMATE
 echo.
 echo 启动 CharterMate Service...
-start "CharterMate - FastAPI" cmd /k "cd /d e:\workspace\Trae\services\chartermate && python -m uvicorn app.main:app --reload --host 0.0.0.0 --port 8000"
+start "CharterMate - FastAPI" cmd /k "cd /d "%~dp0services\chartermate" && python -m uvicorn app.main:app --reload --host 0.0.0.0 --port 8000"
 echo.
 echo CharterMate Service 已启动
 echo 访问地址：http://localhost:8000

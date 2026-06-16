@@ -9,6 +9,9 @@ param(
     [switch]$All = $true             # 启动所有服务（默认）
 )
 
+# 设置项目根目录为脚本所在目录
+$script:ProjectRoot = $PSScriptRoot
+
 # 颜色定义
 function Write-ColorOutput {
     param(
@@ -64,7 +67,7 @@ function Start-Client {
     Write-ColorOutput "访问地址: http://localhost:3001" "Yellow"
     Write-ColorOutput "按 Ctrl+C 停止" "Gray"
     
-    Set-Location "e:\workspace\Trae\client"
+    Set-Location (Join-Path $script:ProjectRoot "client")
     npm run dev
 }
 
@@ -77,7 +80,7 @@ function Start-Core {
     Write-ColorOutput "API 文档: http://localhost:3002/api-docs" "Yellow"
     Write-ColorOutput "按 Ctrl+C 停止" "Gray"
     
-    Set-Location "e:\workspace\Trae\services\core"
+    Set-Location (Join-Path $script:ProjectRoot "services\core")
     npm run dev
 }
 
@@ -90,16 +93,19 @@ function Start-Chartermate {
     Write-ColorOutput "API 文档: http://localhost:8000/docs" "Yellow"
     Write-ColorOutput "按 Ctrl+C 停止" "Gray"
     
-    Set-Location "e:\workspace\Trae\services\chartermate"
+    $chartermatePath = Join-Path $script:ProjectRoot "services\chartermate"
+    Set-Location $chartermatePath
     
     # 检查依赖
-    if (-not (Test-Path "venv")) {
+    $venvPath = Join-Path $chartermatePath "venv"
+    if (-not (Test-Path $venvPath)) {
         Write-ColorOutput "创建虚拟环境..." "Yellow"
-        python -m venv venv
+        python -m venv $venvPath
     }
     
     # 激活虚拟环境并安装依赖
-    & "e:\workspace\Trae\services\chartermate\venv\Scripts\Activate.ps1"
+    $activateScript = Join-Path $venvPath "Scripts\Activate.ps1"
+    & $activateScript
     pip install -q -r requirements.txt
     
     # 启动服务
