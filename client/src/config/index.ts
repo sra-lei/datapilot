@@ -5,8 +5,8 @@
 
 // 服务器类型枚举
 export enum ServerType {
-  MAIN = 'main',           // 主服务器（Node.js Server）
-  BUSINESS = 'business',   // 业务服务器（Python Server）
+  CORE = 'core',           // Core Service（Node.js Server）
+  CHARTERMATE = 'chartermate',   // CharterMate Service（Python Server）
 }
 
 // 服务器配置接口
@@ -44,18 +44,18 @@ const getEnvBoolean = (key: string, defaultValue: boolean): boolean => {
 export const config: AppConfig = {
   title: getEnv('VITE_APP_TITLE', 'Trae Management'),
   version: getEnv('VITE_APP_VERSION', '1.0.0'),
-  apiPrefix: getEnv('VITE_API_PREFIX', '/api'),
+  apiPrefix: getEnv('VITE_API_PREFIX', '/core'),
   enableMock: getEnvBoolean('VITE_ENABLE_MOCK', false),
   servers: {
-    [ServerType.MAIN]: {
-      host: getEnv('VITE_SERVER_MAIN_HOST', 'localhost'),
-      port: getEnvNumber('VITE_SERVER_MAIN_PORT', 3002),
-      url: getEnv('VITE_SERVER_MAIN_URL', 'http://localhost:3002'),
+    [ServerType.CORE]: {
+      host: getEnv('VITE_SERVER_CORE_HOST', 'localhost'),
+      port: getEnvNumber('VITE_SERVER_CORE_PORT', 3002),
+      url: getEnv('VITE_SERVER_CORE_URL', 'http://localhost:3002'),
     },
-    [ServerType.BUSINESS]: {
-      host: getEnv('VITE_SERVER_BUSINESS_HOST', 'localhost'),
-      port: getEnvNumber('VITE_SERVER_BUSINESS_PORT', 8000),
-      url: getEnv('VITE_SERVER_BUSINESS_URL', 'http://localhost:8000'),
+    [ServerType.CHARTERMATE]: {
+      host: getEnv('VITE_SERVER_CHARTERMATE_HOST', 'localhost'),
+      port: getEnvNumber('VITE_SERVER_CHARTERMATE_PORT', 8000),
+      url: getEnv('VITE_SERVER_CHARTERMATE_URL', 'http://localhost:8000'),
     },
   },
 };

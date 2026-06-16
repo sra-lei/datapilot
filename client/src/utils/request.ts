@@ -32,16 +32,16 @@ const defaultConfig: RequestConfig = {
 const getRequestUrl = (serverType: ServerType, path: string): string => {
   // 开发环境使用相对路径（通过 Vite 代理）
   if (import.meta.env.DEV) {
-    return path; // 直接返回相对路径，如 '/api/v1/health'
+    return path; // 直接返回相对路径，如 '/core/user/login' 或 '/api/v1/health'
   }
   
   // 生产环境使用完整 URL
-  const serverUrl = import.meta.env.VITE_SERVER_MAIN_URL || 'http://localhost:3002';
-  const businessUrl = import.meta.env.VITE_SERVER_BUSINESS_URL || 'http://localhost:8000';
+  const coreUrl = import.meta.env.VITE_SERVER_CORE_URL || 'http://localhost:3002';
+  const chartermateUrl = import.meta.env.VITE_SERVER_CHARTERMATE_URL || 'http://localhost:8000';
   
-  return serverType === ServerType.BUSINESS 
-    ? `${businessUrl}${path}` 
-    : `${serverUrl}${path}`;
+  return serverType === ServerType.CHARTERMATE 
+    ? `${chartermateUrl}${path}` 
+    : `${coreUrl}${path}`;
 };
 
 /**
@@ -88,23 +88,27 @@ export async function request<T = unknown>(
 }
 
 /**
- * 主服务器请求（Node.js Server）
+ * Core Service 请求（Node.js Server）
  */
-export const mainRequest = async <T = unknown>(
+export const coreRequest = async <T = unknown>(
   path: string,
   config: RequestConfig = {}
 ): Promise<ApiResponse<T>> => {
-  return request<T>(ServerType.MAIN, path, config);
+  return request<T>(ServerType.CORE, path, config);
 };
 
 /**
- * 业务服务器请求（Python Server）
+ * CharterMate Service 请求（Python Server）
  */
-export const businessRequest = async <T = unknown>(
+export const chartermateRequest = async <T = unknown>(
   path: string,
   config: RequestConfig = {}
 ): Promise<ApiResponse<T>> => {
-  return request<T>(ServerType.BUSINESS, path, config);
+  return request<T>(ServerType.CHARTERMATE, path, config);
 };
+
+// 兼容旧名称（已废弃，建议使用新名称）
+export const mainRequest = coreRequest;
+export const businessRequest = chartermateRequest;
 
 export default request;
