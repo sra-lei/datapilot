@@ -2,14 +2,12 @@
  * Core Service 类型定义
  */
 
-import type { ApiResponse } from '../types';
-
 // 用户相关类型
 export interface UserInfo {
   id: number;
   username: string;
   email: string | null;
-  status: 'active' | 'inactive' | 'deleted';
+  status: "active" | "inactive" | "deleted";
   created_at: string;
   updated_at: string;
 }
@@ -35,7 +33,7 @@ export interface ChangePasswordParams {
 
 export interface UpdateUserStatusParams {
   userId: number;
-  status: 'active' | 'inactive';
+  status: "active" | "inactive";
 }
 
 // 权限相关类型
@@ -97,4 +95,4 @@ export interface DatabaseStats {
 }
 
 // 重新导出公共类型
-export type { ApiResponse } from '../types';
+export type { ApiResponse } from "../types";

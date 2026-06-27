@@ -2,20 +2,24 @@
  * 权限管理模块 - 服务层
  */
 
-import { DatabaseFactory } from '../../database';
-import type { QueryResult, QueryRow } from '../../database/IDatabaseAdapter';
+import { DatabaseFactory } from "../../database";
+import { logger } from "../../utils/logUtils";
 import {
-  Permission,
-  Role,
+  DEFAULT_PERMISSIONS,
+  DEFAULT_ROLES,
+  PERMISSION_MESSAGES,
+} from "./constants";
+import {
+  AssignRoleParams,
   CreatePermissionParams,
   CreateRoleParams,
-  AssignRoleParams,
   GrantPermissionParams,
+  Permission,
+  Role,
   RoleWithPermissions,
-  UserWithRoles,
   ServiceResult,
-} from './types';
-import { PERMISSION_MESSAGES, DEFAULT_PERMISSIONS, DEFAULT_ROLES } from './constants';
+  UserWithRoles,
+} from "./types";
 
 export class PermissionService {
   private db;
@@ -84,8 +88,8 @@ export class PermissionService {
     for (const perm of DEFAULT_PERMISSIONS) {
       try {
         await this.db.insert(
-          'INSERT OR IGNORE INTO permissions (name, description) VALUES (?, ?)',
-          [perm.name, perm.description]
+          "INSERT OR IGNORE INTO permissions (name, description) VALUES (?, ?)",
+          [perm.name, perm.description],
         );
       } catch (error) {
         // 忽略唯一约束冲突
@@ -96,8 +100,8 @@ export class PermissionService {
     for (const role of DEFAULT_ROLES) {
       try {
         await this.db.insert(
-          'INSERT OR IGNORE INTO roles (name, description) VALUES (?, ?)',
-          [role.name, role.description]
+          "INSERT OR IGNORE INTO roles (name, description) VALUES (?, ?)",
+          [role.name, role.description],
         );
       } catch (error) {
         // 忽略唯一约束冲突
@@ -105,17 +109,20 @@ export class PermissionService {
     }
 
     // 为admin角色授予所有权限
-    const adminRole = await this.db.query('SELECT id FROM roles WHERE name = ?', ['admin']);
+    const adminRole = await this.db.query(
+      "SELECT id FROM roles WHERE name = ?",
+      ["admin"],
+    );
     if (adminRole.rows && adminRole.rows.length > 0) {
       const adminRoleId = (adminRole.rows[0] as any).id;
-      const allPermissions = await this.db.query('SELECT id FROM permissions');
+      const allPermissions = await this.db.query("SELECT id FROM permissions");
 
       if (allPermissions.rows) {
         for (const perm of allPermissions.rows) {
           try {
             await this.db.insert(
-              'INSERT OR IGNORE INTO role_permissions (role_id, permission_id) VALUES (?, ?)',
-              [adminRoleId, (perm as any).id]
+              "INSERT OR IGNORE INTO role_permissions (role_id, permission_id) VALUES (?, ?)",
+              [adminRoleId, (perm as any).id],
             );
           } catch (error) {
             // 忽略唯一约束冲突
@@ -125,18 +132,24 @@ export class PermissionService {
     }
 
     // 为user角色授予基础权限
-    const userRole = await this.db.query('SELECT id FROM roles WHERE name = ?', ['user']);
+    const userRole = await this.db.query(
+      "SELECT id FROM roles WHERE name = ?",
+      ["user"],
+    );
     if (userRole.rows && userRole.rows.length > 0) {
       const userRoleId = (userRole.rows[0] as any).id;
-      const basicPermissions = ['user:read', 'database:read'];
+      const basicPermissions = ["user:read", "database:read"];
 
       for (const permName of basicPermissions) {
-        const perm = await this.db.query('SELECT id FROM permissions WHERE name = ?', [permName]);
+        const perm = await this.db.query(
+          "SELECT id FROM permissions WHERE name = ?",
+          [permName],
+        );
         if (perm.rows && perm.rows.length > 0) {
           try {
             await this.db.insert(
-              'INSERT OR IGNORE INTO role_permissions (role_id, permission_id) VALUES (?, ?)',
-              [userRoleId, (perm.rows[0] as any).id]
+              "INSERT OR IGNORE INTO role_permissions (role_id, permission_id) VALUES (?, ?)",
+              [userRoleId, (perm.rows[0] as any).id],
             );
           } catch (error) {
             // 忽略唯一约束冲突
@@ -146,14 +159,22 @@ export class PermissionService {
     }
 
     // 为 Sra 用户分配管理员角色
-    const sraUser = await this.db.query('SELECT id FROM users WHERE username = ?', ['Sra']);
-    if (sraUser.rows && sraUser.rows.length > 0 && adminRole.rows && adminRole.rows.length > 0) {
+    const sraUser = await this.db.query(
+      "SELECT id FROM users WHERE username = ?",
+      ["Sra"],
+    );
+    if (
+      sraUser.rows &&
+      sraUser.rows.length > 0 &&
+      adminRole.rows &&
+      adminRole.rows.length > 0
+    ) {
       const sraUserId = (sraUser.rows[0] as any).id;
       const adminRoleId = (adminRole.rows[0] as any).id;
       try {
         await this.db.insert(
-          'INSERT OR IGNORE INTO user_roles (user_id, role_id) VALUES (?, ?)',
-          [sraUserId, adminRoleId]
+          "INSERT OR IGNORE INTO user_roles (user_id, role_id) VALUES (?, ?)",
+          [sraUserId, adminRoleId],
         );
       } catch (error) {
         // 忽略唯一约束冲突
@@ -168,7 +189,9 @@ export class PermissionService {
    */
   async getAllPermissions(): Promise<ServiceResult<Permission[]>> {
     try {
-      const result = await this.db.query('SELECT * FROM permissions ORDER BY name');
+      const result = await this.db.query(
+        "SELECT * FROM permissions ORDER BY name",
+      );
       return {
         success: true,
         data: (result.rows || []) as unknown as Permission[],
@@ -187,10 +210,15 @@ export class PermissionService {
   /**
    * 创建权限
    */
-  async createPermission(params: CreatePermissionParams): Promise<ServiceResult<Permission>> {
+  async createPermission(
+    params: CreatePermissionParams,
+  ): Promise<ServiceResult<Permission>> {
     try {
       // 检查是否已存在
-      const existing = await this.db.query('SELECT id FROM permissions WHERE name = ?', [params.name]);
+      const existing = await this.db.query(
+        "SELECT id FROM permissions WHERE name = ?",
+        [params.name],
+      );
       if (existing.rows && existing.rows.length > 0) {
         return {
           success: false,
@@ -202,11 +230,14 @@ export class PermissionService {
       }
 
       const result = await this.db.insert(
-        'INSERT INTO permissions (name, description) VALUES (?, ?)',
-        [params.name, params.description || null]
+        "INSERT INTO permissions (name, description) VALUES (?, ?)",
+        [params.name, params.description || null],
       );
 
-      const permission = await this.db.query('SELECT * FROM permissions WHERE id = ?', [result.insertId]);
+      const permission = await this.db.query(
+        "SELECT * FROM permissions WHERE id = ?",
+        [result.insertId],
+      );
       return {
         success: true,
         data: permission.rows?.[0] as unknown as Permission,
@@ -227,7 +258,10 @@ export class PermissionService {
    */
   async deletePermission(id: number): Promise<ServiceResult<void>> {
     try {
-      const result = await this.db.delete('DELETE FROM permissions WHERE id = ?', [id]);
+      const result = await this.db.delete(
+        "DELETE FROM permissions WHERE id = ?",
+        [id],
+      );
       if (!result.affectedRows || result.affectedRows === 0) {
         return {
           success: false,
@@ -256,7 +290,7 @@ export class PermissionService {
    */
   async getAllRoles(): Promise<ServiceResult<Role[]>> {
     try {
-      const result = await this.db.query('SELECT * FROM roles ORDER BY name');
+      const result = await this.db.query("SELECT * FROM roles ORDER BY name");
       return {
         success: true,
         data: (result.rows || []) as unknown as Role[],
@@ -275,9 +309,14 @@ export class PermissionService {
   /**
    * 获取角色详情（包括权限）
    */
-  async getRoleWithPermissions(roleId: number): Promise<ServiceResult<RoleWithPermissions>> {
+  async getRoleWithPermissions(
+    roleId: number,
+  ): Promise<ServiceResult<RoleWithPermissions>> {
     try {
-      const roleResult = await this.db.query('SELECT * FROM roles WHERE id = ?', [roleId]);
+      const roleResult = await this.db.query(
+        "SELECT * FROM roles WHERE id = ?",
+        [roleId],
+      );
       if (!roleResult.rows || roleResult.rows.length === 0) {
         return {
           success: false,
@@ -292,14 +331,15 @@ export class PermissionService {
         `SELECT p.* FROM permissions p
          INNER JOIN role_permissions rp ON p.id = rp.permission_id
          WHERE rp.role_id = ?`,
-        [roleId]
+        [roleId],
       );
 
       return {
         success: true,
         data: {
           ...(roleResult.rows[0] as unknown as Role),
-          permissions: (permissionsResult.rows || []) as unknown as Permission[],
+          permissions: (permissionsResult.rows ||
+            []) as unknown as Permission[],
         },
       };
     } catch (error) {
@@ -319,7 +359,10 @@ export class PermissionService {
   async createRole(params: CreateRoleParams): Promise<ServiceResult<Role>> {
     try {
       // 检查是否已存在
-      const existing = await this.db.query('SELECT id FROM roles WHERE name = ?', [params.name]);
+      const existing = await this.db.query(
+        "SELECT id FROM roles WHERE name = ?",
+        [params.name],
+      );
       if (existing.rows && existing.rows.length > 0) {
         return {
           success: false,
@@ -331,11 +374,13 @@ export class PermissionService {
       }
 
       const result = await this.db.insert(
-        'INSERT INTO roles (name, description) VALUES (?, ?)',
-        [params.name, params.description || null]
+        "INSERT INTO roles (name, description) VALUES (?, ?)",
+        [params.name, params.description || null],
       );
 
-      const role = await this.db.query('SELECT * FROM roles WHERE id = ?', [result.insertId]);
+      const role = await this.db.query("SELECT * FROM roles WHERE id = ?", [
+        result.insertId,
+      ]);
       return {
         success: true,
         data: role.rows?.[0] as unknown as Role,
@@ -354,11 +399,14 @@ export class PermissionService {
   /**
    * 更新角色
    */
-  async updateRole(roleId: number, params: CreateRoleParams): Promise<ServiceResult<Role>> {
+  async updateRole(
+    roleId: number,
+    params: CreateRoleParams,
+  ): Promise<ServiceResult<Role>> {
     try {
       const result = await this.db.update(
-        'UPDATE roles SET name = ?, description = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
-        [params.name, params.description || null, roleId]
+        "UPDATE roles SET name = ?, description = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?",
+        [params.name, params.description || null, roleId],
       );
 
       if (!result.affectedRows || result.affectedRows === 0) {
@@ -371,7 +419,9 @@ export class PermissionService {
         };
       }
 
-      const role = await this.db.query('SELECT * FROM roles WHERE id = ?', [roleId]);
+      const role = await this.db.query("SELECT * FROM roles WHERE id = ?", [
+        roleId,
+      ]);
       return {
         success: true,
         data: role.rows?.[0] as unknown as Role,
@@ -393,18 +443,26 @@ export class PermissionService {
   async deleteRole(id: number): Promise<ServiceResult<void>> {
     try {
       // 不能删除admin角色
-      const role = await this.db.query('SELECT name FROM roles WHERE id = ?', [id]);
-      if (role.rows && role.rows.length > 0 && (role.rows[0] as any).name === 'admin') {
+      const role = await this.db.query("SELECT name FROM roles WHERE id = ?", [
+        id,
+      ]);
+      if (
+        role.rows &&
+        role.rows.length > 0 &&
+        (role.rows[0] as any).name === "admin"
+      ) {
         return {
           success: false,
           error: {
             code: 403,
-            message: '不能删除管理员角色',
+            message: "不能删除管理员角色",
           },
         };
       }
 
-      const result = await this.db.delete('DELETE FROM roles WHERE id = ?', [id]);
+      const result = await this.db.delete("DELETE FROM roles WHERE id = ?", [
+        id,
+      ]);
       if (!result.affectedRows || result.affectedRows === 0) {
         return {
           success: false,
@@ -431,11 +489,19 @@ export class PermissionService {
   /**
    * 为角色授予权限
    */
-  async grantPermission(params: GrantPermissionParams): Promise<ServiceResult<void>> {
+  async grantPermission(
+    params: GrantPermissionParams,
+  ): Promise<ServiceResult<void>> {
     try {
       // 检查角色和权限是否存在
-      const roleCheck = await this.db.query('SELECT id FROM roles WHERE id = ?', [params.roleId]);
-      const permCheck = await this.db.query('SELECT id FROM permissions WHERE id = ?', [params.permissionId]);
+      const roleCheck = await this.db.query(
+        "SELECT id FROM roles WHERE id = ?",
+        [params.roleId],
+      );
+      const permCheck = await this.db.query(
+        "SELECT id FROM permissions WHERE id = ?",
+        [params.permissionId],
+      );
 
       if (!roleCheck.rows || roleCheck.rows.length === 0) {
         return {
@@ -458,8 +524,8 @@ export class PermissionService {
       }
 
       await this.db.insert(
-        'INSERT OR IGNORE INTO role_permissions (role_id, permission_id) VALUES (?, ?)',
-        [params.roleId, params.permissionId]
+        "INSERT OR IGNORE INTO role_permissions (role_id, permission_id) VALUES (?, ?)",
+        [params.roleId, params.permissionId],
       );
 
       return { success: true };
@@ -477,23 +543,33 @@ export class PermissionService {
   /**
    * 撤销角色权限
    */
-  async revokePermission(roleId: number, permissionId: number): Promise<ServiceResult<void>> {
+  async revokePermission(
+    roleId: number,
+    permissionId: number,
+  ): Promise<ServiceResult<void>> {
     try {
       // 不能撤销admin角色的任何权限
-      const roleCheck = await this.db.query('SELECT name FROM roles WHERE id = ?', [roleId]);
-      if (roleCheck.rows && roleCheck.rows.length > 0 && (roleCheck.rows[0] as any).name === 'admin') {
+      const roleCheck = await this.db.query(
+        "SELECT name FROM roles WHERE id = ?",
+        [roleId],
+      );
+      if (
+        roleCheck.rows &&
+        roleCheck.rows.length > 0 &&
+        (roleCheck.rows[0] as any).name === "admin"
+      ) {
         return {
           success: false,
           error: {
             code: 403,
-            message: '不能撤销管理员角色的权限',
+            message: "不能撤销管理员角色的权限",
           },
         };
       }
 
       const result = await this.db.delete(
-        'DELETE FROM role_permissions WHERE role_id = ? AND permission_id = ?',
-        [roleId, permissionId]
+        "DELETE FROM role_permissions WHERE role_id = ? AND permission_id = ?",
+        [roleId, permissionId],
       );
 
       if (!result.affectedRows || result.affectedRows === 0) {
@@ -501,7 +577,7 @@ export class PermissionService {
           success: false,
           error: {
             code: 404,
-            message: '权限关联不存在',
+            message: "权限关联不存在",
           },
         };
       }
@@ -524,15 +600,21 @@ export class PermissionService {
   async assignRole(params: AssignRoleParams): Promise<ServiceResult<void>> {
     try {
       // 检查用户和角色是否存在
-      const userCheck = await this.db.query('SELECT id FROM users WHERE id = ?', [params.userId]);
-      const roleCheck = await this.db.query('SELECT id FROM roles WHERE id = ?', [params.roleId]);
+      const userCheck = await this.db.query(
+        "SELECT id FROM users WHERE id = ?",
+        [params.userId],
+      );
+      const roleCheck = await this.db.query(
+        "SELECT id FROM roles WHERE id = ?",
+        [params.roleId],
+      );
 
       if (!userCheck.rows || userCheck.rows.length === 0) {
         return {
           success: false,
           error: {
             code: 404,
-            message: '用户不存在',
+            message: "用户不存在",
           },
         };
       }
@@ -548,8 +630,8 @@ export class PermissionService {
       }
 
       await this.db.insert(
-        'INSERT OR IGNORE INTO user_roles (user_id, role_id) VALUES (?, ?)',
-        [params.userId, params.roleId]
+        "INSERT OR IGNORE INTO user_roles (user_id, role_id) VALUES (?, ?)",
+        [params.userId, params.roleId],
       );
 
       return { success: true };
@@ -567,23 +649,33 @@ export class PermissionService {
   /**
    * 撤销用户角色
    */
-  async revokeRole(userId: number, roleId: number): Promise<ServiceResult<void>> {
+  async revokeRole(
+    userId: number,
+    roleId: number,
+  ): Promise<ServiceResult<void>> {
     try {
       // 不能撤销用户的admin角色
-      const roleCheck = await this.db.query('SELECT name FROM roles WHERE id = ?', [roleId]);
-      if (roleCheck.rows && roleCheck.rows.length > 0 && (roleCheck.rows[0] as any).name === 'admin') {
+      const roleCheck = await this.db.query(
+        "SELECT name FROM roles WHERE id = ?",
+        [roleId],
+      );
+      if (
+        roleCheck.rows &&
+        roleCheck.rows.length > 0 &&
+        (roleCheck.rows[0] as any).name === "admin"
+      ) {
         return {
           success: false,
           error: {
             code: 403,
-            message: '不能撤销管理员角色',
+            message: "不能撤销管理员角色",
           },
         };
       }
 
       const result = await this.db.delete(
-        'DELETE FROM user_roles WHERE user_id = ? AND role_id = ?',
-        [userId, roleId]
+        "DELETE FROM user_roles WHERE user_id = ? AND role_id = ?",
+        [userId, roleId],
       );
 
       if (!result.affectedRows || result.affectedRows === 0) {
@@ -591,7 +683,7 @@ export class PermissionService {
           success: false,
           error: {
             code: 404,
-            message: '用户角色关联不存在',
+            message: "用户角色关联不存在",
           },
         };
       }
@@ -613,16 +705,21 @@ export class PermissionService {
   /**
    * 获取用户的角色和权限
    */
-  async getUserPermissions(userId: number): Promise<ServiceResult<UserWithRoles>> {
+  async getUserPermissions(
+    userId: number,
+  ): Promise<ServiceResult<UserWithRoles>> {
     try {
       // 获取用户信息
-      const userResult = await this.db.query('SELECT id, username, email FROM users WHERE id = ?', [userId]);
+      const userResult = await this.db.query(
+        "SELECT id, username, email FROM users WHERE id = ?",
+        [userId],
+      );
       if (!userResult.rows || userResult.rows.length === 0) {
         return {
           success: false,
           error: {
             code: 404,
-            message: '用户不存在',
+            message: "用户不存在",
           },
         };
       }
@@ -632,7 +729,7 @@ export class PermissionService {
         `SELECT r.* FROM roles r
          INNER JOIN user_roles ur ON r.id = ur.role_id
          WHERE ur.user_id = ?`,
-        [userId]
+        [userId],
       );
 
       // 获取用户权限（去重）
@@ -641,10 +738,12 @@ export class PermissionService {
          INNER JOIN role_permissions rp ON p.id = rp.permission_id
          INNER JOIN user_roles ur ON rp.role_id = ur.role_id
          WHERE ur.user_id = ?`,
-        [userId]
+        [userId],
       );
 
-      const permissions = (permissionsResult.rows || []).map((row: any) => row.name);
+      const permissions = (permissionsResult.rows || []).map(
+        (row: any) => row.name,
+      );
 
       return {
         success: true,
@@ -675,12 +774,12 @@ export class PermissionService {
          INNER JOIN role_permissions rp ON p.id = rp.permission_id
          INNER JOIN user_roles ur ON rp.role_id = ur.role_id
          WHERE ur.user_id = ?`,
-        [userId]
+        [userId],
       );
 
       return (result.rows || []).map((row: any) => row.name);
     } catch (error) {
-      console.error('获取用户权限列表失败', error);
+      logger.error("获取用户权限列表失败", { error });
       return [];
     }
   }
@@ -699,13 +798,13 @@ export class PermissionService {
       const permissions = await this.getUserPermissionList(userId);
 
       // 检查是否有 * (所有权限)
-      if (permissions.includes('*')) {
+      if (permissions.includes("*")) {
         return true;
       }
 
       return permissions.includes(permission);
     } catch (error) {
-      console.error('检查权限失败', error);
+      logger.error("检查权限失败", { error, userId, permission });
       return false;
     }
   }
@@ -719,12 +818,12 @@ export class PermissionService {
         `SELECT r.name FROM roles r
          INNER JOIN user_roles ur ON r.id = ur.role_id
          WHERE ur.user_id = ? AND r.name = 'admin'`,
-        [userId]
+        [userId],
       );
 
       return result.rows !== undefined && result.rows.length > 0;
     } catch (error) {
-      console.error('检查用户角色失败', error);
+      logger.error("检查用户角色失败", { error, userId });
       return false;
     }
   }

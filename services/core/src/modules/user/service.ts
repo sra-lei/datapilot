@@ -4,6 +4,7 @@
  */
 
 import { DatabaseFactory } from "../../database";
+import { logger } from "../../utils";
 import { permissionService } from "../permission";
 import { MESSAGES } from "./constants";
 import {
@@ -357,7 +358,11 @@ export async function updateUserStatus(params: {
 
     return { success: true };
   } catch (_err: unknown) {
-    console.error("更新用户状态失败:", _err);
+    logger.error("更新用户状态失败", {
+      error: _err,
+      userId: params.userId,
+      status: params.status,
+    });
     return {
       success: false,
       error: {
@@ -430,7 +435,7 @@ export async function deleteUser(userId: number): Promise<ServiceResult> {
 
     return { success: true };
   } catch (_err: unknown) {
-    console.error("删除用户失败:", _err);
+    logger.error("删除用户失败", { error: _err, userId });
     return {
       success: false,
       error: {
@@ -458,7 +463,7 @@ export async function getUserList(): Promise<ServiceResult<UserInfo[]>> {
       data: (result.rows || []) as unknown as UserInfo[],
     };
   } catch (_err: unknown) {
-    console.error("获取用户列表失败:", _err);
+    logger.error("获取用户列表失败", { error: _err });
     return {
       success: false,
       error: {

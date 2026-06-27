@@ -2,10 +2,11 @@
  * 权限验证中间件
  */
 
-import { Request, Response, NextFunction } from 'express';
-import { permissionService } from '../modules/permission';
-import { error } from '../utils/response';
-import { AuthUser } from '../modules/permission/types';
+import { NextFunction, Request, Response } from "express";
+import { permissionService } from "../modules/permission";
+import { AuthUser } from "../modules/permission/types";
+import { logger } from "../utils/logUtils";
+import { error } from "../utils/response";
 
 // 扩展 Express Request 类型
 declare global {
@@ -19,13 +20,17 @@ declare global {
 /**
  * 验证用户是否已登录
  */
-export function requireAuth(req: Request, res: Response, next: NextFunction): void {
+export function requireAuth(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): void {
   // 从请求头或session中获取用户信息
   // 这里假设前端会在请求头中传递 userId
-  const userId = req.headers['x-user-id'];
+  const userId = req.headers["x-user-id"];
 
   if (!userId) {
-    error(res, 401, '请先登录');
+    error(res, 401, "请先登录");
     return;
   }
 
@@ -39,31 +44,35 @@ export function requireAuth(req: Request, res: Response, next: NextFunction): vo
  * @param permission 所需权限，如 'user:create'
  */
 export function requirePermission(permission: string) {
-  return async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-    const userId = (req as any).userId || req.headers['x-user-id'];
+  return async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ): Promise<void> => {
+    const userId = (req as any).userId || req.headers["x-user-id"];
 
     if (!userId) {
-      error(res, 401, '请先登录');
+      error(res, 401, "请先登录");
       return;
     }
 
     try {
       const hasPermission = await permissionService.hasPermission(
         parseInt(userId as string),
-        permission
+        permission,
       );
 
       if (!hasPermission) {
-        error(res, 403, '没有权限执行此操作');
+        error(res, 403, "没有权限执行此操作");
         return;
       }
 
       next();
-    } catch (error) {
-      console.error('权限验证失败', error);
+    } catch (err) {
+      logger.error("权限验证失败", { error: err, userId, permission });
       res.status(500).json({
         code: 500,
-        message: '权限验证失败',
+        message: "权限验证失败",
       });
     }
   };
@@ -74,38 +83,47 @@ export function requirePermission(permission: string) {
  * @param permissions 所需权限数组
  */
 export function requireAnyPermission(permissions: string[]) {
-  return async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-    const userId = (req as any).userId || req.headers['x-user-id'];
+  return async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ): Promise<void> => {
+    const userId = (req as any).userId || req.headers["x-user-id"];
 
     if (!userId) {
-      error(res, 401, '请先登录');
+      error(res, 401, "请先登录");
       return;
     }
 
     try {
       const userPermissions = await permissionService.getUserPermissionList(
-        parseInt(userId as string)
+        parseInt(userId as string),
       );
 
       // 检查是否有 * (所有权限)
-      if (userPermissions.includes('*') || userPermissions.includes(permissions[0])) {
+      if (
+        userPermissions.includes("*") ||
+        userPermissions.includes(permissions[0])
+      ) {
         next();
         return;
       }
 
-      const hasPermission = permissions.some((p) => userPermissions.includes(p));
+      const hasPermission = permissions.some((p) =>
+        userPermissions.includes(p),
+      );
 
       if (!hasPermission) {
-        error(res, 403, '没有权限执行此操作');
+        error(res, 403, "没有权限执行此操作");
         return;
       }
 
       next();
-    } catch (error) {
-      console.error('权限验证失败', error);
+    } catch (err) {
+      logger.error("权限验证失败", { error: err, userId, permissions });
       res.status(500).json({
         code: 500,
-        message: '权限验证失败',
+        message: "权限验证失败",
       });
     }
   };
@@ -117,14 +135,14 @@ export function requireAnyPermission(permissions: string[]) {
 export async function loadUserPermissions(
   req: Request,
   _res: Response,
-  next: NextFunction
+  next: NextFunction,
 ): Promise<void> {
-  const userId = req.headers['x-user-id'];
+  const userId = req.headers["x-user-id"];
 
   if (userId) {
     try {
       const userPermissions = await permissionService.getUserPermissions(
-        parseInt(userId as string)
+        parseInt(userId as string),
       );
 
       if (userPermissions.success && userPermissions.data) {
@@ -135,8 +153,8 @@ export async function loadUserPermissions(
           permissions: userPermissions.data.permissions,
         };
       }
-    } catch (error) {
-      console.error('加载用户权限失败', error);
+    } catch (err) {
+      logger.error("加载用户权限失败", { error: err, userId });
     }
   }
 
