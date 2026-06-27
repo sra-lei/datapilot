@@ -15,7 +15,7 @@ import {
 import type { MenuProps } from "antd";
 import { Avatar, Dropdown, Layout, Menu, Space, Switch, Tooltip } from "antd";
 import { useEffect, useState } from "react";
-import { Outlet, useNavigate } from "react-router-dom";
+import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { usePermission } from "../contexts/PermissionContext";
 
 const { Header, Sider, Content } = Layout;
@@ -27,6 +27,7 @@ function MainLayout() {
     return savedTheme === "dark";
   });
   const navigate = useNavigate();
+  const location = useLocation();
   const { can } = usePermission();
 
   // 主题切换
@@ -169,7 +170,7 @@ function MainLayout() {
         <Menu
           theme="dark"
           mode="inline"
-          defaultSelectedKeys={["/dashboard"]}
+          selectedKeys={[location.pathname]}
           items={menuItems}
           onClick={handleMenuClick}
         />
