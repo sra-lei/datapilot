@@ -4,8 +4,6 @@
 
 export const DB_CONFIG = {
   DEFAULT_PORT: 3002,
-  DEFAULT_DB_PATH: './data/trae.db',
-  JOURNAL_MODE: 'WAL',
 } as const;
 
 export const DB_ERRORS = {
@@ -14,6 +12,5 @@ export const DB_ERRORS = {
 } as const;
 
 export const DB_ADAPTER_NAMES = {
-  SQLITE: 'SQLite',
   MYSQL: 'MySQL',
 } as const;

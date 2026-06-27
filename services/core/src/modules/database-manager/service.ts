@@ -2,36 +2,17 @@
  * 数据库管理模块 - 服务层
  */
 
-import { DatabaseFactory } from '../../database';
-import { TableInfo, ColumnInfo, QueryResult, ServiceResult } from './types';
-import Database from 'better-sqlite3';
-import path from 'path';
+import { DatabaseFactory, QueryRow } from "../../database";
+import { ColumnInfo, QueryResult, ServiceResult, TableInfo } from "./types";
 
 export class DatabaseManagerService {
-  private dbPath: string;
-
-  constructor() {
-    // 从环境变量或默认路径获取数据库路径
-    this.dbPath = process.env.SQLITE_DB_PATH || path.join(process.cwd(), 'data', 'trae.db');
-  }
-
-  /**
-   * 获取数据库连接（直接使用 better-sqlite3）
-   */
-  private getDb(): Database.Database {
-    return new Database(this.dbPath);
-  }
-
-  /**
-   * 获取所有表信息
-   */
   async getTables(): Promise<ServiceResult<TableInfo[]>> {
     try {
-      const db = this.getDb();
-      const tables = db.prepare(
-        "SELECT name, type FROM sqlite_master WHERE type IN ('table', 'view') AND name NOT LIKE 'sqlite_%'"
-      ).all() as TableInfo[];
-      db.close();
+      const db = DatabaseFactory.getInstance();
+      const result = await db.query(
+        "SELECT table_name as name, 'table' as type FROM information_schema.tables WHERE table_schema = DATABASE()",
+      );
+      const tables = (result.rows || []) as unknown as TableInfo[];
 
       return {
         success: true,
@@ -48,14 +29,21 @@ export class DatabaseManagerService {
     }
   }
 
-  /**
-   * 获取表结构信息
-   */
   async getTableInfo(tableName: string): Promise<ServiceResult<ColumnInfo[]>> {
     try {
-      const db = this.getDb();
-      const columns = db.prepare(`PRAGMA table_info("${tableName}")`).all() as ColumnInfo[];
-      db.close();
+      const db = DatabaseFactory.getInstance();
+      const result = await db.query(
+        "SELECT ordinal_position as cid, column_name as name, data_type as type, is_nullable = 'NO' as notnull, column_default as dflt_value, column_type LIKE '%PRI%' as pk FROM information_schema.columns WHERE table_schema = DATABASE() AND table_name = ?",
+        [tableName],
+      );
+      const columns = (result.rows || []).map((row) => ({
+        cid: Number((row as QueryRow).cid),
+        name: String((row as QueryRow).name),
+        type: String((row as QueryRow).type),
+        notnull: Number((row as QueryRow).notnull),
+        dflt_value: (row as QueryRow).dflt_value || null,
+        pk: Number((row as QueryRow).pk),
+      })) as ColumnInfo[];
 
       return {
         success: true,
@@ -72,38 +60,30 @@ export class DatabaseManagerService {
     }
   }
 
-  /**
-   * 执行查询
-   */
   async executeQuery(sql: string): Promise<ServiceResult<QueryResult>> {
     try {
-      // 安全检查：只允许 SELECT 查询
       const trimmedSql = sql.trim().toLowerCase();
-      if (!trimmedSql.startsWith('select')) {
+      if (!trimmedSql.startsWith("select")) {
         return {
           success: false,
           error: {
             code: 403,
-            message: '只允许执行 SELECT 查询',
+            message: "只允许执行 SELECT 查询",
           },
         };
       }
 
-      const db = this.getDb();
-      const stmt = db.prepare(sql);
-
-      // 获取列信息
-      const columns = stmt.columns().map((col: { name: string }) => col.name);
-
-      // 执行查询
-      const rows = stmt.all() as Record<string, unknown>[];
-      db.close();
+      const db = DatabaseFactory.getInstance();
+      const result = await db.query(sql);
+      const rows = result.rows || [];
+      const columns =
+        rows.length > 0 ? Object.keys(rows[0] as Record<string, unknown>) : [];
 
       return {
         success: true,
         data: {
           columns,
-          rows,
+          rows: rows as Record<string, unknown>[],
           rowCount: rows.length,
         },
       };
@@ -118,26 +98,31 @@ export class DatabaseManagerService {
     }
   }
 
-  /**
-   * 获取表数据预览
-   */
-  async getTableData(tableName: string, limit: number = 100): Promise<ServiceResult<QueryResult>> {
+  async getTableData(
+    tableName: string,
+    limit: number = 100,
+  ): Promise<ServiceResult<QueryResult>> {
     try {
-      const db = this.getDb();
+      const db = DatabaseFactory.getInstance();
 
-      // 获取列信息
-      const columnsResult = db.prepare(`PRAGMA table_info("${tableName}")`).all() as ColumnInfo[];
-      const columns = columnsResult.map((col) => col.name);
+      const columnsResult = await db.query(
+        "SELECT column_name as name FROM information_schema.columns WHERE table_schema = DATABASE() AND table_name = ?",
+        [tableName],
+      );
+      const columns = (columnsResult.rows || []).map((row) =>
+        String((row as QueryRow).name),
+      );
 
-      // 执行查询
-      const rows = db.prepare(`SELECT * FROM "${tableName}" LIMIT ?`).all(limit) as Record<string, unknown>[];
-      db.close();
+      const result = await db.query(`SELECT * FROM \`${tableName}\` LIMIT ?`, [
+        limit,
+      ]);
+      const rows = result.rows || [];
 
       return {
         success: true,
         data: {
           columns,
-          rows,
+          rows: rows as Record<string, unknown>[],
           rowCount: rows.length,
         },
       };
@@ -152,46 +137,40 @@ export class DatabaseManagerService {
     }
   }
 
-  /**
-   * 获取数据库统计信息
-   */
   async getDatabaseStats(): Promise<ServiceResult<Record<string, unknown>>> {
     try {
-      const db = this.getDb();
+      const db = DatabaseFactory.getInstance();
 
-      // 获取表数量
-      const tableCount = db.prepare(
-        "SELECT COUNT(*) as count FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'"
-      ).get() as { count: number };
+      const tableCountResult = await db.query(
+        "SELECT COUNT(*) as count FROM information_schema.tables WHERE table_schema = DATABASE()",
+      );
+      const tableCount = Number(
+        (tableCountResult.rows?.[0] as QueryRow)?.count || 0,
+      );
 
-      // 获取总行数
-      const tables = db.prepare(
-        "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'"
-      ).all() as { name: string }[];
+      const tablesResult = await db.query(
+        "SELECT table_name as name FROM information_schema.tables WHERE table_schema = DATABASE()",
+      );
+      const tables = (tablesResult.rows || []) as { name: string }[];
 
       const tableStats: Record<string, number> = {};
       let totalRows = 0;
 
       for (const table of tables) {
-        const count = db.prepare(`SELECT COUNT(*) as count FROM "${table.name}"`).get() as { count: number };
-        tableStats[table.name] = count.count;
-        totalRows += count.count;
+        const countResult = await db.query(
+          `SELECT COUNT(*) as count FROM \`${table.name}\``,
+        );
+        const count = Number((countResult.rows?.[0] as QueryRow)?.count || 0);
+        tableStats[table.name] = count;
+        totalRows += count;
       }
-
-      // 获取数据库文件大小
-      const fs = await import('fs');
-      const stats = fs.statSync(this.dbPath);
-
-      db.close();
 
       return {
         success: true,
         data: {
-          tableCount: tableCount.count,
+          tableCount,
           totalRows,
           tableStats,
-          dbFileSize: stats.size,
-          dbFilePath: this.dbPath,
         },
       };
     } catch (error) {
@@ -206,5 +185,4 @@ export class DatabaseManagerService {
   }
 }
 
-// 导出单例
 export const databaseManagerService = new DatabaseManagerService();
