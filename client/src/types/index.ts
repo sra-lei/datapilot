@@ -4,16 +4,16 @@
 
 // 用户状态
 export enum UserStatus {
-  ACTIVE = 'active',      // 启用
-  INACTIVE = 'inactive',  // 停用
-  DELETED = 'deleted',    // 已删除
+  ACTIVE = "active", // 启用
+  INACTIVE = "inactive", // 停用
+  DELETED = "deleted", // 已删除
 }
 
 export interface UserInfo {
   id: number;
   username: string;
   email: string | null;
-  status?: UserStatus;  // 用户状态
+  status?: UserStatus; // 用户状态
 }
 
 export interface LoginParams {
@@ -44,4 +44,11 @@ export interface ApiResponse<T = unknown> {
   code: number;
   message: string;
   data?: T;
+}
+
+export interface ChatMessage {
+  id: number;
+  sender: "user" | "agent";
+  content: string;
+  timestamp: string;
 }

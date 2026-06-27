@@ -17,6 +17,7 @@ import { Avatar, Dropdown, Layout, Menu, Space, Switch, Tooltip } from "antd";
 import { useEffect, useState } from "react";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { usePermission } from "../contexts/PermissionContext";
+import ChatWidget from "@/components/ChatWidget";
 
 const { Header, Sider, Content } = Layout;
 
@@ -214,6 +215,7 @@ function MainLayout() {
           <Outlet />
         </Content>
       </Layout>
+      <ChatWidget />
     </Layout>
   );
 }
