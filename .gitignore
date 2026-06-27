@@ -33,6 +33,8 @@ services/core/data/*.db-wal
 services/core/assign-admin.js
 
 # 嵌入式仓库（独立管理的子项目）
+client/
+services/core/
 services/chartermate/
 
 # Python 虚拟环境
