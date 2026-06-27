@@ -4,14 +4,13 @@
 
 import {
   CloseOutlined,
+  FullscreenOutlined,
   MessageOutlined,
   MinusOutlined,
 } from "@ant-design/icons";
-import { Button, Input, Layout, Space } from "antd";
+import { Button, Input, Space } from "antd";
 import { useEffect, useRef, useState } from "react";
 import type { ChatMessage } from "../types";
-
-const { Sider, Content } = Layout;
 
 function ChatWidget() {
   const [isOpen, setIsOpen] = useState(false);
@@ -112,11 +111,11 @@ function ChatWidget() {
         <Space>
           <Button
             type="text"
-            icon={<MinusOutlined />}
+            icon={isMinimized ? <FullscreenOutlined /> : <MinusOutlined />}
             style={{ color: "#fff", padding: 4 }}
             onClick={(e) => {
               e.stopPropagation();
-              setIsMinimized(true);
+              setIsMinimized(!isMinimized);
             }}
           />
           <Button
