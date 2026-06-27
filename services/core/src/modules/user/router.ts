@@ -6,9 +6,16 @@
  *   description: 用户注册、登录、状态管理等接口
  */
 
-import { Router } from 'express';
-import { register, login, changePassword, deleteUser, updateUserStatus } from './controller';
-import { requirePermission } from '../../middleware/permission';
+import { Router } from "express";
+import { requirePermission } from "../../middleware/permission";
+import {
+  changePassword,
+  deleteUser,
+  getUserList,
+  login,
+  register,
+  updateUserStatus,
+} from "./controller";
 
 const router = Router();
 
@@ -34,7 +41,7 @@ const router = Router();
  *       400:
  *         description: 参数错误
  */
-router.post('/register', register);
+router.post("/register", register);
 
 /**
  * @swagger
@@ -60,7 +67,23 @@ router.post('/register', register);
  *       403:
  *         description: 用户已被停用或删除
  */
-router.post('/login', login);
+router.post("/login", login);
+
+/**
+ * @swagger
+ * /core/user/list:
+ *   get:
+ *     summary: 获取用户列表
+ *     tags: [用户管理]
+ *     responses:
+ *       200:
+ *         description: 获取成功
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ApiResponse'
+ */
+router.get("/list", getUserList);
 
 /**
  * @swagger
@@ -88,7 +111,7 @@ router.post('/login', login);
  *       403:
  *         description: 权限不足（强制修改时）
  */
-router.post('/change-password', changePassword);
+router.post("/change-password", changePassword);
 
 /**
  * @swagger
@@ -121,7 +144,7 @@ router.post('/change-password', changePassword);
  *       404:
  *         description: 用户不存在
  */
-router.delete('/:id', requirePermission('user:delete'), deleteUser);
+router.delete("/:id", requirePermission("user:delete"), deleteUser);
 
 /**
  * @swagger
@@ -153,6 +176,6 @@ router.delete('/:id', requirePermission('user:delete'), deleteUser);
  *       404:
  *         description: 用户不存在
  */
-router.put('/status', requirePermission('user:update'), updateUserStatus);
+router.put("/status", requirePermission("user:update"), updateUserStatus);
 
 export default router;

@@ -23,10 +23,11 @@ import {
 } from "antd";
 import { useEffect, useState } from "react";
 import { usePermission } from "../contexts/PermissionContext";
-import type { Role } from "../services/core";
+import type { Role, UserInfo } from "../services/core";
 import {
   changePassword,
   getAllRoles,
+  getUserList,
   register,
   updateUserStatus,
 } from "../services/core";
@@ -65,14 +66,15 @@ function UserManagement() {
     setLoading(true);
     try {
       const response = await getUserList();
-
+      console.log(response);
+      
       if (response.status === 200) {
         // 确保每个用户都有默认状态
         const usersWithStatus = (response.data || []).map((user: UserInfo) => ({
           ...user,
           status: user.status || UserStatus.ACTIVE,
         }));
-        setUsers(usersWithStatus);
+        setUsers(usersWithStatus as User[]);
       } else {
         message.error(response.msg || "加载用户列表失败");
       }
