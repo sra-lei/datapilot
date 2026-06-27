@@ -1,4 +1,4 @@
-version: '3.8'
+version: "3.8"
 
 services:
   core:
@@ -37,6 +37,9 @@ services:
       - MYSQL_DATABASE=trae
       - MYSQL_USER=trae
       - MYSQL_PASSWORD=trae_password
+      - MYSQL_INIT_CONNECT='SET NAMES utf8mb4;'
+      - LC_ALL=C.UTF-8
+      - LANG=C.UTF-8
     volumes:
       - mysql_data:/var/lib/mysql
       - ./database/init:/docker-entrypoint-initdb.d
