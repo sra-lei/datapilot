@@ -2,6 +2,11 @@
  * 权限管理模块 - 类型定义
  */
 
+import { ServiceResult } from "../../constants";
+
+// 导出全局类型
+export { ServiceResult };
+
 export interface Permission {
   id: number;
   name: string;
@@ -58,15 +63,6 @@ export interface UserWithRoles {
   email: string | null;
   roles: Role[];
   permissions: string[];
-}
-
-export interface ServiceResult<T = unknown> {
-  success: boolean;
-  data?: T;
-  error?: {
-    code: number;
-    message: string;
-  };
 }
 
 // 权限验证相关类型

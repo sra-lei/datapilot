@@ -2,9 +2,13 @@
  * 用户模块常量
  */
 
-import { ErrorCode, UserOperation, UserStatus } from './types';
+import { ErrorCode } from '../../constants';
+import { UserStatus } from './types';
 
-export { ErrorCode, UserOperation, UserStatus };
+export { ErrorCode, UserStatus };
+
+// 用户操作类型
+export type UserOperationType = 'USER_REGISTER' | 'USER_LOGIN' | 'USER_CHANGE_PASSWORD' | 'USER_UPDATE_STATUS' | 'USER_DELETE';
 
 export const MESSAGES = {
   SUCCESS: '操作成功',
