@@ -39,6 +39,7 @@ services:
       - MYSQL_PASSWORD=trae_password
     volumes:
       - mysql_data:/var/lib/mysql
+      - ./database/init:/docker-entrypoint-initdb.d
     networks:
       - trae-network
     restart: unless-stopped

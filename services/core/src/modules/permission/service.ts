@@ -35,8 +35,8 @@ export class PermissionService {
     // 创建权限表
     await this.db.run(`
       CREATE TABLE IF NOT EXISTS permissions (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        name TEXT UNIQUE NOT NULL,
+        id INT PRIMARY KEY AUTO_INCREMENT,
+        name VARCHAR(255) UNIQUE NOT NULL,
         description TEXT,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
@@ -46,8 +46,8 @@ export class PermissionService {
     // 创建角色表
     await this.db.run(`
       CREATE TABLE IF NOT EXISTS roles (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        name TEXT UNIQUE NOT NULL,
+        id INT PRIMARY KEY AUTO_INCREMENT,
+        name VARCHAR(255) UNIQUE NOT NULL,
         description TEXT,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
@@ -57,8 +57,8 @@ export class PermissionService {
     // 创建角色-权限关联表
     await this.db.run(`
       CREATE TABLE IF NOT EXISTS role_permissions (
-        role_id INTEGER NOT NULL,
-        permission_id INTEGER NOT NULL,
+        role_id INT NOT NULL,
+        permission_id INT NOT NULL,
         PRIMARY KEY (role_id, permission_id),
         FOREIGN KEY (role_id) REFERENCES roles(id) ON DELETE CASCADE,
         FOREIGN KEY (permission_id) REFERENCES permissions(id) ON DELETE CASCADE
@@ -68,8 +68,8 @@ export class PermissionService {
     // 创建用户-角色关联表
     await this.db.run(`
       CREATE TABLE IF NOT EXISTS user_roles (
-        user_id INTEGER NOT NULL,
-        role_id INTEGER NOT NULL,
+        user_id INT NOT NULL,
+        role_id INT NOT NULL,
         PRIMARY KEY (user_id, role_id),
         FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
         FOREIGN KEY (role_id) REFERENCES roles(id) ON DELETE CASCADE
@@ -88,7 +88,7 @@ export class PermissionService {
     for (const perm of DEFAULT_PERMISSIONS) {
       try {
         await this.db.insert(
-          "INSERT OR IGNORE INTO permissions (name, description) VALUES (?, ?)",
+          "INSERT IGNORE INTO permissions (name, description) VALUES (?, ?)",
           [perm.name, perm.description],
         );
       } catch (error) {
@@ -100,7 +100,7 @@ export class PermissionService {
     for (const role of DEFAULT_ROLES) {
       try {
         await this.db.insert(
-          "INSERT OR IGNORE INTO roles (name, description) VALUES (?, ?)",
+          "INSERT IGNORE INTO roles (name, description) VALUES (?, ?)",
           [role.name, role.description],
         );
       } catch (error) {
@@ -121,7 +121,7 @@ export class PermissionService {
         for (const perm of allPermissions.rows) {
           try {
             await this.db.insert(
-              "INSERT OR IGNORE INTO role_permissions (role_id, permission_id) VALUES (?, ?)",
+              "INSERT IGNORE INTO role_permissions (role_id, permission_id) VALUES (?, ?)",
               [adminRoleId, (perm as any).id],
             );
           } catch (error) {
@@ -148,7 +148,7 @@ export class PermissionService {
         if (perm.rows && perm.rows.length > 0) {
           try {
             await this.db.insert(
-              "INSERT OR IGNORE INTO role_permissions (role_id, permission_id) VALUES (?, ?)",
+              "INSERT IGNORE INTO role_permissions (role_id, permission_id) VALUES (?, ?)",
               [userRoleId, (perm.rows[0] as any).id],
             );
           } catch (error) {
@@ -173,7 +173,7 @@ export class PermissionService {
       const adminRoleId = (adminRole.rows[0] as any).id;
       try {
         await this.db.insert(
-          "INSERT OR IGNORE INTO user_roles (user_id, role_id) VALUES (?, ?)",
+          "INSERT IGNORE INTO user_roles (user_id, role_id) VALUES (?, ?)",
           [sraUserId, adminRoleId],
         );
       } catch (error) {
@@ -524,7 +524,7 @@ export class PermissionService {
       }
 
       await this.db.insert(
-        "INSERT OR IGNORE INTO role_permissions (role_id, permission_id) VALUES (?, ?)",
+        "INSERT IGNORE INTO role_permissions (role_id, permission_id) VALUES (?, ?)",
         [params.roleId, params.permissionId],
       );
 
@@ -630,7 +630,7 @@ export class PermissionService {
       }
 
       await this.db.insert(
-        "INSERT OR IGNORE INTO user_roles (user_id, role_id) VALUES (?, ?)",
+        "INSERT IGNORE INTO user_roles (user_id, role_id) VALUES (?, ?)",
         [params.userId, params.roleId],
       );
 
