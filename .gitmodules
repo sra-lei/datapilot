@@ -1,0 +1,9 @@
+[submodule "client"]
+	path = client
+	url = git@github.com:sra-lei/datapilot-client.git
+[submodule "services/core"]
+	path = services/core
+	url = git@github.com:sra-lei/datapilot-core.git
+[submodule "services/chartermate"]
+	path = services/chartermate
+	url = git@github.com:sra-lei/datapilot-chartermate.git

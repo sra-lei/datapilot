@@ -32,10 +32,10 @@ services/core/data/*.db-wal
 # 临时脚本
 services/core/assign-admin.js
 
-# 嵌入式仓库（独立管理的子项目）
-client/
-services/core/
-services/chartermate/
+# 嵌入式仓库（作为 Git submodules 管理）
+# client/              # 已配置为 submodule
+# services/core/       # 已配置为 submodule
+# services/chartermate/ # 已配置为 submodule
 
 # Python 虚拟环境
 venv/
