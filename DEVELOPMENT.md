@@ -60,19 +60,7 @@ Trae/
 - ✅ 实时查看日志输出
 - ✅ 便于调试和问题排查
 
-### 方法 2：PowerShell 脚本
-
-```powershell
-# 启动所有服务
-.\start-dev.ps1
-
-# 仅启动特定服务
-.\start-dev.ps1 -Client
-.\start-dev.ps1 -Core
-.\start-dev.ps1 -Chartermate
-```
-
-### 方法 3：手动启动
+### 方法 2：手动启动
 
 #### 1. 启动 Client
 
@@ -318,11 +306,6 @@ POST /api/user/login 200 45ms
 # Windows
 start-dev.bat
 # 选择 [5] 停止所有服务
-
-# PowerShell
-.\start-dev.ps1
-# 按 Ctrl+C
-```
 
 ### 方法 4：手动结束进程
 

@@ -1,0 +1,90 @@
+services:
+  client:
+    image: ccr.ccs.tencentyun.com/sra.io/datapolit-client:v4
+    container_name: datapolit-client
+    env_file:
+      - ./client/.env
+    ports:
+      - "80:80"
+    networks:
+      - datapolit-network
+    depends_on:
+      - core
+      - rag
+    restart: unless-stopped
+
+  core:
+    image: ccr.ccs.tencentyun.com/sra.io/datapolit-core:v2
+    container_name: datapolit-core
+    ports:
+      - "3002:3002"
+    env_file:
+      - ./core/.env
+    depends_on:
+      mysql:
+        condition: service_healthy
+    volumes:
+      - ./data:/app/data
+      - ./logs:/app/data/logs
+    networks:
+      - datapolit-network
+    restart: unless-stopped
+
+  rag:
+    image: ccr.ccs.tencentyun.com/sra.io/datapolit-rag:v1
+    container_name: datapolit-rag
+    ports:
+      - "8000:8000"
+    env_file:
+      - ./rag/.env
+    environment:
+      - CHROMA_DIR=/app/data/chroma_db
+    volumes:
+      - ./data:/app/data
+      - ./.env:/app/.env:ro
+    depends_on:
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+
+  redis:
+    image: redis/redis-stack-server:latest
+    container_name: datapolit-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    restart: unless-stopped
+
+  mysql:
+    image: mysql:8.0
+    container_name: datapolit-mysql
+    ports:
+      - "3306:3306"
+    env_file:
+      - ./core/.env
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./database/init:/docker-entrypoint-initdb.d
+    networks:
+      - datapolit-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 20s
+      retries: 10
+
+volumes:
+  mysql_data:
+    driver: local
+  redis_data:
+    driver: local
+
+networks:
+  datapolit-network:
+    driver: bridge
