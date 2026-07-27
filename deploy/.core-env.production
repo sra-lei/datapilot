@@ -1,0 +1,19 @@
+# Node.js 服务配置
+NODE_ENV=production
+PORT=3002
+ENABLE_SWAGGER=false
+
+# MySQL 应用用户配置
+DB_HOST=mysql
+DB_PORT=3306
+DB_USER=datapolit-core
+DB_PASSWORD=core_password
+DB_NAME=datapolit
+
+# MySQL root 用户配置
+MYSQL_ROOT_PASSWORD=datapolit-root
+MYSQL_DATABASE=datapolit
+MYSQL_USER=datapolit-core
+MYSQL_PASSWORD=core_password
+
+IMAGE_NAME=ccr.ccs.tencentyun.com/sra.io/datapolit-core
