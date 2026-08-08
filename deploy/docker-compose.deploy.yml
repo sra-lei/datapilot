@@ -1,6 +1,6 @@
 services:
   client:
-    image: ccr.ccs.tencentyun.com/sra.io/datapolit-client:v7
+    image: docker.cnb.cool/sra_lei/datapolit-client:latest
     container_name: datapolit-client
     env_file:
       - .client-env.production
@@ -14,7 +14,7 @@ services:
     restart: unless-stopped
 
   core:
-    image: ccr.ccs.tencentyun.com/sra.io/datapolit-core:v2
+    image: docker.cnb.cool/sra_lei/datapolit-core:latest
     container_name: datapolit-core
     env_file:
       - .core-env.production
@@ -29,7 +29,7 @@ services:
     restart: unless-stopped
 
   rag:
-    image: ccr.ccs.tencentyun.com/sra.io/datapolit-rag:v1
+    image: docker.cnb.cool/sra_lei/datapolit-rag:latest
     container_name: datapolit-rag
     env_file:
       - .rag-env.production

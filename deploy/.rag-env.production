@@ -21,5 +21,8 @@ REDIS_URL=redis://redis:3379
 SIMILARITY_THRESHOLD=0.92
 CACHE_TTL_HOURS=24
 
+# 混合检索（BM25 + 向量）
+NEED_HYBRID_SEARCH=true
+
 # 日志级别
 log_level=INFO
