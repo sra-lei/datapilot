@@ -7,3 +7,6 @@
 [submodule "services/chartermate"]
 	path = services/chartermate
 	url = git@github.com:sra-lei/datapilot-chartermate.git
+[submodule "services/doc-kit"]
+	path = services/doc-kit
+	url = https://cnb.cool/sra_lei/datapolit-dockit
