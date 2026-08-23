@@ -64,7 +64,8 @@ services:
       - .core-env.production
     volumes:
       - mysql_data:/var/lib/mysql
-      - ./database/init:/docker-entrypoint-initdb.d
+      # 唯一权威 init 脚本：services/core/database/init/init.sql（deploy 不再单独维护一份）
+      - ../services/core/database/init:/docker-entrypoint-initdb.d
     networks:
       - datapolit-network
     restart: unless-stopped
