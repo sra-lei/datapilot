@@ -1,0 +1,246 @@
+# ============================================================
+# Datapolit 全服务一键编排（生产/服务器版）
+#
+# 覆盖全部 7 个服务：
+#   client       前端（Nginx 反代 /core /api/v1 /v1 /doc-kit）  :80
+#   core         Node/Express 后端（依赖 mysql）                :3002(内部)
+#   rag          RAG/CharterMate Python 服务（依赖 redis）      :8000
+#   docs-seeker  语义检索问答 Python 服务                       :8001
+#   doc-kit      文档处理 Python 服务                           :8100
+#   mysql        MySQL 8.0（首次建库执行 services/core 的 init.sql）
+#   redis        Redis 语义缓存
+#
+# 前置条件：
+#   1. 外部网络 datapolit-shared 已创建（deploy.sh 会自动创建）
+#   2. deploy/.env 已配置（从 .env.example 复制，填入密钥）
+#   3. 已登录镜像仓库（deploy.sh 会自动登录）
+#
+# 使用：
+#   bash deploy/deploy.sh            # 一键部署/更新
+#   docker compose -f deploy/docker-compose.yml up -d   # 手动
+# ============================================================
+
+services:
+  # ----------------------------------------------------------
+  # 前端：Nginx 静态站 + 反向代理
+  # 构建时注入 VITE_* 环境变量，运行时无需 env_file
+  # ----------------------------------------------------------
+  client:
+    image: docker.cnb.cool/sra_lei/datapolit-client:latest
+    container_name: datapolit-client
+    ports:
+      - "80:80"
+    networks:
+      - datapolit-shared
+    restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # ----------------------------------------------------------
+  # Core 后端：Node/Express（:3002，仅容器内访问，由 nginx 反代）
+  # ----------------------------------------------------------
+  core:
+    image: docker.cnb.cool/sra_lei/datapolit-core:latest
+    container_name: datapolit-core
+    env_file:
+      - .env
+    depends_on:
+      mysql:
+        condition: service_healthy
+    volumes:
+      - ./data:/app/data
+      - ./logs:/app/data/logs
+    networks:
+      - datapolit-shared
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3002/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # ----------------------------------------------------------
+  # RAG / CharterMate：Python FastAPI（:8000）
+  # ----------------------------------------------------------
+  rag:
+    image: docker.cnb.cool/sra_lei/datapolit-rag:latest
+    container_name: datapolit-rag
+    env_file:
+      - .env
+    environment:
+      - CHROMA_DIR=/app/data/chroma_db
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --workers 1
+    ports:
+      - "8000:8000"
+    depends_on:
+      redis:
+        condition: service_healthy
+    volumes:
+      - chroma_data:/app/data/chroma_db
+      - app_logs:/app/data/logs
+    networks:
+      - datapolit-shared
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/v1/health')"]
+      interval: 60s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # ----------------------------------------------------------
+  # Docs-Seeker：语义检索问答 Python 服务（:8001）
+  # 容器名固定为 datapolit-docs-seeker：client/nginx.conf 反代依赖
+  # ----------------------------------------------------------
+  docs-seeker:
+    image: docker.cnb.cool/sra_lei/datapolit-doc-seeker:latest
+    container_name: datapolit-docs-seeker
+    env_file:
+      - .env
+    environment:
+      PYTHONUNBUFFERED: "1"
+      PYTHONDONTWRITEBYTECODE: "1"
+    command: uvicorn docs_seeker.app:app --host 0.0.0.0 --port 8001 --workers 1
+    ports:
+      - "8001:8001"
+    volumes:
+      - docsseeker-data:/app/data
+    read_only: true
+    tmpfs:
+      - /tmp:size=128m,mode=1777
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    networks:
+      - datapolit-shared
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request,sys; r=urllib.request.urlopen('http://127.0.0.1:8001/v1/health', timeout=5); sys.exit(0 if r.status==200 else 1)"]
+      interval: 60s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # ----------------------------------------------------------
+  # Doc-Kit：文档处理 Python 服务（:8100，支持 300MB 大文件上传）
+  # ----------------------------------------------------------
+  doc-kit:
+    image: docker.cnb.cool/sra_lei/datapolit-dockit:latest
+    container_name: datapolit-dockit
+    env_file:
+      - .env
+    environment:
+      PYTHONUNBUFFERED: "1"
+      PYTHONDONTWRITEBYTECODE: "1"
+      TASK_DB_PATH: "/app/data/tasks.db"
+    command: uvicorn dockit.app:app --host 0.0.0.0 --port 8100 --workers 1
+    ports:
+      - "8100:8100"
+    volumes:
+      - dockit-data:/app/data
+    read_only: true
+    tmpfs:
+      - /tmp:size=128m,mode=1777
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    networks:
+      - datapolit-shared
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request,sys; r=urllib.request.urlopen('http://127.0.0.1:8100/doc-kit/health', timeout=5); sys.exit(0 if r.status==200 else 1)"]
+      interval: 60s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # ----------------------------------------------------------
+  # MySQL 8.0：首次建库时执行 services/core/database/init/init.sql
+  # （唯一权威 init 脚本，与各服务 compose 共用）
+  # ----------------------------------------------------------
+  mysql:
+    image: mysql:8.0
+    container_name: datapolit-mysql
+    env_file:
+      - .env
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ../services/core/database/init:/docker-entrypoint-initdb.d:ro
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+    networks:
+      - datapolit-shared
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # ----------------------------------------------------------
+  # Redis：语义缓存（容器内通过服务名 redis:6379 访问）
+  # ----------------------------------------------------------
+  redis:
+    image: redis:7-alpine
+    container_name: datapolit-redis
+    command: redis-server --maxmemory 128mb --maxmemory-policy allkeys-lru
+    volumes:
+      - redis_data:/data
+    networks:
+      - datapolit-shared
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+volumes:
+  mysql_data:
+  redis_data:
+  chroma_data:
+  app_logs:
+  docsseeker-data:
+  dockit-data:
+
+networks:
+  datapolit-shared:
+    external: true

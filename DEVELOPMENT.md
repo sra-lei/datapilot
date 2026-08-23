@@ -27,9 +27,11 @@ Trae/
 │       ├── app/
 │       ├── requirements.txt
 │       └── ...
-├── start-dev.bat              # Windows 启动脚本
-├── start-dev.ps1              # PowerShell 启动脚本
-└── DEVELOPMENT.md             # 开发文档
+├── scripts/
+│   ├── start-dev.bat              # Windows 启动脚本
+│   └── init.sh                    # 项目初始化（submodule + 依赖）
+├── deploy/                        # 一键部署（docker compose + deploy.sh）
+└── DEVELOPMENT.md                 # 开发文档
 ```
 
 ## 🚀 快速启动
