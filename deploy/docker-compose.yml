@@ -1,14 +1,13 @@
 # ============================================================
 # Datapolit 全服务一键编排（生产/服务器版）
 #
-# 覆盖全部 7 个服务：
-#   client       前端（Nginx 反代 /core /api/v1 /v1 /doc-kit）  :80
+# 覆盖全部 6 个服务：
+#   client       前端（Nginx 反代 /core /v1 /doc-kit）          :80
 #   core         Node/Express 后端（依赖 mysql）                :3002(内部)
-#   rag          RAG/CharterMate Python 服务（依赖 redis）      :8000
-#   docs-seeker  语义检索问答 Python 服务                       :8001
+#   docs-seeker  语义检索问答 Python 服务（依赖 redis）         :8001
 #   doc-kit      文档处理 Python 服务                           :8100
 #   mysql        MySQL 8.0（首次建库执行 services/core 的 init.sql）
-#   redis        Redis 语义缓存
+#   redis        Redis 语义缓存（docs-seeker 使用）
 #
 # 前置条件：
 #   1. 外部网络 datapolit-shared 已创建（deploy.sh 会自动创建）
@@ -62,40 +61,6 @@ services:
       timeout: 10s
       retries: 3
       start_period: 15s
-    logging:
-      driver: json-file
-      options:
-        max-size: "10m"
-        max-file: "3"
-
-  # ----------------------------------------------------------
-  # RAG / CharterMate：Python FastAPI（:8000）
-  # ----------------------------------------------------------
-  rag:
-    image: docker.cnb.cool/sra_lei/datapolit-rag:latest
-    container_name: datapolit-rag
-    env_file:
-      - .env
-    environment:
-      - CHROMA_DIR=/app/data/chroma_db
-    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --workers 1
-    ports:
-      - "8000:8000"
-    depends_on:
-      redis:
-        condition: service_healthy
-    volumes:
-      - chroma_data:/app/data/chroma_db
-      - app_logs:/app/data/logs
-    networks:
-      - datapolit-shared
-    restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/v1/health')"]
-      interval: 60s
-      timeout: 10s
-      retries: 3
-      start_period: 40s
     logging:
       driver: json-file
       options:
@@ -211,7 +176,7 @@ services:
         max-file: "3"
 
   # ----------------------------------------------------------
-  # Redis：语义缓存（容器内通过服务名 redis:6379 访问）
+  # Redis：语义缓存（docs-seeker 使用，容器内通过服务名 redis:6379 访问）
   # ----------------------------------------------------------
   redis:
     image: redis:7-alpine
@@ -236,8 +201,6 @@ services:
 volumes:
   mysql_data:
   redis_data:
-  chroma_data:
-  app_logs:
   docsseeker-data:
   dockit-data:
 

@@ -3,7 +3,7 @@
 # Datapolit 一键部署脚本
 #
 # 用途：在服务器（或任意装有 Docker 的主机）上一条命令部署/更新全部服务
-#       （client / core / rag / docs-seeker / doc-kit / mysql / redis）
+#       （client / core / docs-seeker / doc-kit / mysql / redis）
 #
 # 用法：
 #   bash deploy/deploy.sh             # 首次部署 / 更新（pull + up -d）
@@ -115,7 +115,6 @@ cmd_up() {
   echo ""
   info "部署完成！访问地址："
   echo "    前端入口:     http://<服务器IP>/"
-  echo "    RAG 服务:     http://<服务器IP>:8000"
   echo "    Docs-Seeker:  http://<服务器IP>:8001"
   echo "    Doc-Kit:      http://<服务器IP>:8100"
 }
