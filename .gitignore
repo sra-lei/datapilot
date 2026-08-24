@@ -35,7 +35,6 @@ services/core/assign-admin.js
 # 嵌入式仓库（作为 Git submodules 管理）
 # client/              # 已配置为 submodule
 # services/core/       # 已配置为 submodule
-# services/chartermate/ # 已配置为 submodule
 
 # Python 虚拟环境
 venv/
