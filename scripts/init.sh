@@ -78,21 +78,6 @@ else
 fi
 echo ""
 
-# 提示 CharterMate 虚拟环境（可选）
-if [ -f services/chartermate/requirements.txt ] && [ ! -d services/chartermate/.venv ]; then
-    echo "========================================"
-    echo "  提示：CharterMate 虚拟环境未创建"
-    echo "========================================"
-    echo "  建议执行以下命令创建虚拟环境："
-    echo ""
-    echo "    cd services/chartermate"
-    echo "    python -m venv .venv"
-    echo "    source .venv/bin/activate      # Linux/macOS"
-    echo "    .venv\\Scripts\\activate.bat    # Windows"
-    echo "    pip install -r requirements.txt"
-    echo ""
-fi
-
 echo "========================================"
 echo "  初始化完成！"
 echo "========================================"
@@ -103,5 +88,4 @@ echo ""
 echo "  或分别启动各服务："
 echo "    cd client && npm run dev              # 前端 :3001"
 echo "    cd services/core && npm run dev        # Core  :3002"
-echo "    cd services/chartermate && uvicorn app.main:app --reload  # AI :8000"
 echo ""

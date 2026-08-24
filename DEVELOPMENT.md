@@ -1,19 +1,18 @@
-# Trae 开发环境启动指南
+# Datapilot 开发环境启动指南
 
 ## 📋 概述
 
-Trae 项目包含三个主要服务，采用微服务架构组织：
+Datapilot 项目包含两个主要服务，采用微服务架构组织：
 
 | 服务 | 技术栈 | 端口 | 目录 | 说明 |
 |------|--------|------|------|------|
 | **Client** | Vite + React | 3001 | `client/` | 前端界面 |
 | **Core Service** | Express + TypeScript | 3002 | `services/core/` | 核心服务（用户、权限、数据库管理） |
-| **CharterMate** | FastAPI + Python | 8000 | `services/chartermate/` | 业务服务（RAG 智能问答） |
 
 ## 📁 项目结构
 
 ```
-Trae/
+datapilot/
 ├── client/                    # 前端应用
 │   ├── src/
 │   ├── package.json
@@ -23,10 +22,8 @@ Trae/
 │   │   ├── src/
 │   │   ├── package.json
 │   │   └── ...
-│   └── chartermate/           # CharterMate 业务服务（原 server_chartermate）
-│       ├── app/
-│       ├── requirements.txt
-│       └── ...
+│   ├── doc-kit/               # 文档处理服务
+│   └── docs-seeker/           # 检索问答服务
 ├── scripts/
 │   ├── start-dev.bat              # Windows 启动脚本
 │   └── init.sh                    # 项目初始化（submodule + 依赖）
@@ -42,18 +39,17 @@ Trae/
 
 ```
 ========================================
-   Trae 开发环境启动脚本
+   Datapilot 开发环境启动脚本
 ========================================
 
 选择启动模式：
   [1] 启动所有服务（推荐）
   [2] 仅启动 Client
   [3] 仅启动 Core Service
-  [4] 仅启动 CharterMate Service
-  [5] 停止所有服务
+  [4] 停止所有服务
 ========================================
 
-请输入选项 (1-5): 1
+请输入选项 (1-4): 1
 ```
 
 **优点**：
@@ -67,23 +63,15 @@ Trae/
 #### 1. 启动 Client
 
 ```bash
-cd e:\workspace\Trae\client
+cd e:\workspace\datapilot\client
 npm run dev
 ```
 
 #### 2. 启动 Core Service（新终端）
 
 ```bash
-cd e:\workspace\Trae\services\core
+cd e:\workspace\datapilot\services\core
 npm run dev
-```
-
-#### 3. 启动 CharterMate（新终端）
-
-```bash
-cd e:\workspace\Trae\services\chartermate
-pip install -r requirements.txt
-python -m uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
 ## 📊 访问地址
@@ -94,14 +82,12 @@ python -m uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 |------|------|------|
 | Client | http://localhost:3001 | 前端应用 |
 | Core Service | http://localhost:3002 | 核心服务 API |
-| CharterMate | http://localhost:8000 | 业务服务 API |
 
 ### API 文档
 
 | 服务 | 地址 | 说明 |
 |------|------|------|
 | Core Service | http://localhost:3002/api-docs | Swagger 文档（仅开发环境） |
-| CharterMate | http://localhost:8000/docs | FastAPI 自动生成文档 |
 
 ## 🔍 查看日志
 
@@ -132,16 +118,6 @@ python -m uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 │ [2024-01-01 12:00:00] GET /api/user│
 │ [2024-01-01 12:00:01] POST /api... │
 └─────────────────────────────────────┘
-
-┌─────────────────────────────────────┐
-│ CharterMate - FastAPI              │  ← 紫色标题栏
-├─────────────────────────────────────┤
-│ INFO:     Uvicorn running on        │
-│           http://0.0.0.0:8000       │
-│                                    │
-│ 2024-01-01 12:00:00 | INFO | 收到请 │
-│ 2024-01-01 12:00:01 | INFO | 返回响 │
-└─────────────────────────────────────┘
 ```
 
 ### 日志类型
@@ -157,12 +133,6 @@ python -m uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 - ✅ 数据库操作日志
 - ✅ 权限检查日志
 - ✅ 错误堆栈跟踪
-
-#### CharterMate (FastAPI)
-- ✅ 请求日志（使用 Loguru）
-- ✅ RAG 处理日志
-- ✅ 向量检索日志
-- ✅ LLM 调用日志
 
 ## 🐛 常见问题
 
@@ -189,32 +159,16 @@ taskkill /PID <PID> /F
 #### Node.js 依赖
 
 ```bash
-cd e:\workspace\Trae\services\core
+cd e:\workspace\datapilot\services\core
 rm -rf node_modules package-lock.json
 npm install
-```
-
-#### Python 依赖
-
-```bash
-cd e:\workspace\Trae\services\chartermate
-pip install -r requirements.txt
 ```
 
 ### 3. TypeScript 编译错误
 
 ```bash
-cd e:\workspace\Trae\services\core
+cd e:\workspace\datapilot\services\core
 npx tsc --noEmit
-```
-
-### 4. Python 模块导入错误
-
-确保使用正确的环境：
-
-```bash
-cd e:\workspace\Trae\services\chartermate
-python -c "import app; print('OK')"
 ```
 
 ## 🔧 开发技巧
@@ -225,13 +179,10 @@ python -c "import app; print('OK')"
 
 ```powershell
 # 标签页 1: Client
-cd e:\workspace\Trae\client; npm run dev
+cd e:\workspace\datapilot\client; npm run dev
 
 # 标签页 2: Core Service
-cd e:\workspace\Trae\services\core; npm run dev
-
-# 标签页 3: CharterMate
-cd e:\workspace\Trae\services\chartermate; python -m uvicorn app.main:app --reload
+cd e:\workspace\datapilot\services\core; npm run dev
 ```
 
 ### 2. 过滤日志
@@ -248,13 +199,6 @@ const levels = {
 };
 ```
 
-#### CharterMate 日志（过滤特定模块）
-
-```python
-# services/chartermate/app/main.py
-logger.add(sys.stderr, level="INFO")  # 只显示 INFO 及以上
-```
-
 ### 3. 调试工具
 
 #### Client
@@ -264,9 +208,6 @@ logger.add(sys.stderr, level="INFO")  # 只显示 INFO 及以上
 #### Core Service
 - Node.js 调试器：`node --inspect src/index.ts`
 - VS Code 调试配置
-
-#### CharterMate
-- Python 调试器：`python -m debugpy -m uvicorn app.main:app`
 
 ## 📝 日志输出示例
 
@@ -286,12 +227,6 @@ POST /api/user/login 200 45ms
   Response: { status: 200, msg: 'success', data: {...} }
 ```
 
-#### CharterMate
-```
-2024-01-01 12:00:00 | INFO     | 收到请求: GET /api/v1/health
-2024-01-01 12:00:00 | INFO     | 返回响应: {"status":"ok","service":"CharterMate"}
-```
-
 ## 🛑 停止服务
 
 ### 方法 1：关闭终端窗口
@@ -307,16 +242,13 @@ POST /api/user/login 200 45ms
 ```bash
 # Windows
 start-dev.bat
-# 选择 [5] 停止所有服务
+# 选择 [4] 停止所有服务
 
 ### 方法 4：手动结束进程
 
 ```bash
 # 结束 Node.js 进程
 taskkill /F /IM node.exe
-
-# 结束 Python 进程
-taskkill /F /IM python.exe
 ```
 
 ## ✅ 检查服务状态
@@ -329,9 +261,6 @@ curl http://localhost:3001
 
 # 检查 Core Service
 curl http://localhost:3002/api/health
-
-# 检查 CharterMate
-curl http://localhost:8000/api/v1/health
 ```
 
 ## 🎯 最佳实践
@@ -358,7 +287,6 @@ curl http://localhost:8000/api/v1/health
 ```
 services/
 ├── core/              # 核心服务（用户、权限、数据库）
-├── chartermate/       # CharterMate 问答服务
 ├── analytics/         # 数据分析服务（新增）
 ├── notifications/     # 通知服务（新增）
 ├── payment/           # 支付服务（新增）
