@@ -2,30 +2,25 @@
 
 ## 📋 概述
 
-Datapilot 项目包含两个主要服务，采用微服务架构组织：
+Datapilot 项目采用微服务架构组织，主要包含以下服务：
 
 | 服务 | 技术栈 | 端口 | 目录 | 说明 |
 |------|--------|------|------|------|
-| **Client** | Vite + React | 3001 | `client/` | 前端界面 |
+| **Client** | Vite + React | 8080 | `client/` | 前端界面 |
 | **Core Service** | Express + TypeScript | 3002 | `services/core/` | 核心服务（用户、权限、数据库管理） |
+| **Doc-Kit** | Python FastAPI | 8100 | `services/doc-kit/` | 文档处理服务（PDF 解析、向量入库） |
+| **Docs-Seeker** | Python FastAPI | 8001 | `services/docs-seeker/` | 检索问答服务（RAG 智能问答） |
 
 ## 📁 项目结构
 
 ```
 datapilot/
 ├── client/                    # 前端应用
-│   ├── src/
-│   ├── package.json
-│   └── ...
 ├── services/                  # 后端服务集合
-│   ├── core/                  # 核心服务（原 server）
-│   │   ├── src/
-│   │   ├── package.json
-│   │   └── ...
+│   ├── core/                  # 核心服务
 │   ├── doc-kit/               # 文档处理服务
 │   └── docs-seeker/           # 检索问答服务
 ├── scripts/
-│   ├── start-dev.bat              # Windows 启动脚本
 │   └── init.sh                    # 项目初始化（submodule + 依赖）
 ├── deploy/                        # 一键部署（docker compose + deploy.sh）
 └── DEVELOPMENT.md                 # 开发文档
@@ -33,32 +28,9 @@ datapilot/
 
 ## 🚀 快速启动
 
-### 方法 1：一键启动（推荐）
+### 各服务启动说明
 
-双击运行 `start-dev.bat`，选择启动模式：
-
-```
-========================================
-   Datapilot 开发环境启动脚本
-========================================
-
-选择启动模式：
-  [1] 启动所有服务（推荐）
-  [2] 仅启动 Client
-  [3] 仅启动 Core Service
-  [4] 停止所有服务
-========================================
-
-请输入选项 (1-4): 1
-```
-
-**优点**：
-- ✅ 一键启动所有服务
-- ✅ 每个服务在独立终端窗口中运行
-- ✅ 实时查看日志输出
-- ✅ 便于调试和问题排查
-
-### 方法 2：手动启动
+> 各服务详细说明以各自目录下的 README 为准。
 
 #### 1. 启动 Client
 
@@ -67,11 +39,27 @@ cd e:\workspace\datapilot\client
 npm run dev
 ```
 
-#### 2. 启动 Core Service（新终端）
+#### 2. 启动 Core Service
 
 ```bash
 cd e:\workspace\datapilot\services\core
 npm run dev
+```
+
+#### 3. 启动 Doc-Kit（Python，可选）
+
+```bash
+cd e:\workspace\datapilot\services\doc-kit
+uv sync --extra dev        # 首次需先复制 .env.example 为 .env 并填写密钥
+uv run uvicorn dockit.app:app --host 0.0.0.0 --port 8100
+```
+
+#### 4. 启动 Docs-Seeker（Python，可选）
+
+```bash
+cd e:\workspace\datapilot\services\docs-seeker
+uv sync --extra dev          # 首次需先复制 .env.example 为 .env 并填写密钥
+uv run uvicorn docs_seeker.app:app --host 0.0.0.0 --port 8001
 ```
 
 ## 📊 访问地址
@@ -80,14 +68,16 @@ npm run dev
 
 | 服务 | 地址 | 说明 |
 |------|------|------|
-| Client | http://localhost:3001 | 前端应用 |
+| Client | http://localhost:8080 | 前端应用 |
 | Core Service | http://localhost:3002 | 核心服务 API |
+| Doc-Kit | http://localhost:8100 | 文档处理服务 API |
+| Docs-Seeker | http://localhost:8001 | 检索问答服务 API |
 
 ### API 文档
 
 | 服务 | 地址 | 说明 |
 |------|------|------|
-| Core Service | http://localhost:3002/api-docs | Swagger 文档（仅开发环境） |
+| Core Service | http://localhost:3002/core/api-docs | Swagger 文档（仅开发环境） |
 
 ## 🔍 查看日志
 
@@ -97,26 +87,45 @@ npm run dev
 
 ```
 ┌─────────────────────────────────────┐
-│ Client - Vite                       │  ← 蓝色标题栏
+│ Client - Vite                       │
 ├─────────────────────────────────────┤
 │ VITE v5.x.x                        │
 │ ready in 1234 ms                    │
 │                                    │
-│ ➜  Local:   http://localhost:3001/ │
-│ ➜  Network: http://192.168.x.x:3001│
+│ ➜  Local:   http://localhost:8080/ │
+│ ➜  Network: http://192.168.x.x:8080│
 │                                    │
 │ watching for changes...            │  ← 实时热重载
 └─────────────────────────────────────┘
 
 ┌─────────────────────────────────────┐
-│ Core - Express                     │  ← 绿色标题栏
+│ Core - Express                     │
 ├─────────────────────────────────────┤
 │ Server is running on port 3002     │
 │ Environment: development           │
 │ Swagger API docs enabled           │
 │                                    │
-│ [2024-01-01 12:00:00] GET /api/user│
-│ [2024-01-01 12:00:01] POST /api... │
+│ 2024-01-01 12:00:00 [INFO] [USER_LOGIN] 用户登录成功 │
+│ 2024-01-01 12:00:01 [INFO] [REQUEST] GET /core/health│
+└─────────────────────────────────────┘
+
+┌─────────────────────────────────────┐
+│ Doc-Kit - FastAPI                   │
+├─────────────────────────────────────┤
+│ INFO:     Started server process [1234]               │
+│ INFO:     Application startup complete.               │
+│ INFO:     Uvicorn running on http://0.0.0.0:8100      │
+│ INFO:     VectorStore 初始化完成 | collection=chartermate_docs │
+└─────────────────────────────────────┘
+
+┌─────────────────────────────────────┐
+│ Docs-Seeker - FastAPI               │
+├─────────────────────────────────────┤
+│ INFO:     Started server process [5678]               │
+│ INFO:     docs-seeker 启动中...                        │
+│ INFO:     BM25 索引构建完成: docs=120 terms=4500       │
+│ INFO:     Application startup complete.               │
+│ INFO:     Uvicorn running on http://0.0.0.0:8001      │
 └─────────────────────────────────────┘
 ```
 
@@ -134,6 +143,17 @@ npm run dev
 - ✅ 权限检查日志
 - ✅ 错误堆栈跟踪
 
+#### Doc-Kit (FastAPI)
+- ✅ uvicorn 访问日志
+- ✅ 文档解析 / 切块 / 摘要生成日志
+- ✅ 向量化与入库进度日志
+
+#### Docs-Seeker (FastAPI)
+- ✅ uvicorn 访问日志
+- ✅ BM25 索引构建与检索日志
+- ✅ RAG 流程 / 语义缓存命中日志
+- ✅ LLM 网关与熔断日志
+
 ## 🐛 常见问题
 
 ### 1. 端口被占用
@@ -141,14 +161,14 @@ npm run dev
 如果端口被占用，会看到类似错误：
 
 ```
-Error: listen EADDRINUSE :::3001
+Error: listen EADDRINUSE :::8080
 ```
 
 **解决方法**：
 
 ```bash
-# Windows 查看端口占用
-netstat -ano | findstr :3001
+# Windows 查看端口占用（8080 为 Client，3002 为 Core Service）
+netstat -ano | findstr :8080
 
 # 结束占用进程
 taskkill /PID <PID> /F
@@ -187,17 +207,10 @@ cd e:\workspace\datapilot\services\core; npm run dev
 
 ### 2. 过滤日志
 
-#### Core Service 日志（过滤 INFO 级别）
+#### Core Service 日志（默认 INFO 级别）
 
-```javascript
-// services/core/src/utils/logUtils.ts
-const levels = {
-  error: 0,
-  warn: 1,
-  info: 2,
-  debug: 3
-};
-```
+日志级别由 `services/core/src/constants/logConstants.ts` 中的 `LOG_CONFIG.DEFAULT_LEVEL` 定义（默认 `info`），
+可通过环境变量 `LOG_LEVEL` 调整（可选值：`error` / `warn` / `info` / `debug`）。
 
 ### 3. 调试工具
 
@@ -206,7 +219,7 @@ const levels = {
 - React DevTools 扩展
 
 #### Core Service
-- Node.js 调试器：`node --inspect src/index.ts`
+- Node.js 调试器：`npx ts-node --inspect src/index.ts`
 - VS Code 调试配置
 
 ## 📝 日志输出示例
@@ -215,16 +228,13 @@ const levels = {
 
 #### Client
 ```
-[vite] http proxy error: /api/user/login
-POST /api/user/login 200 45ms
+[vite] http proxy error: /core/user/login
+POST /core/user/login 200 45ms
 ```
 
 #### Core Service
 ```
-[2024-01-01 12:00:00] [INFO] POST /api/user/login
-  User: admin
-  IP: ::1
-  Response: { status: 200, msg: 'success', data: {...} }
+2024-01-01 12:00:00 [INFO ] [USER_LOGIN       ] 用户登录成功 | userId=1 | {"ip":"::1","path":"/core/user/login"}
 ```
 
 ## 🛑 停止服务
@@ -237,14 +247,7 @@ POST /api/user/login 200 45ms
 
 在终端窗口中按 `Ctrl + C` 可以停止服务。
 
-### 方法 3：使用脚本
-
-```bash
-# Windows
-start-dev.bat
-# 选择 [4] 停止所有服务
-
-### 方法 4：手动结束进程
+### 方法 3：手动结束进程
 
 ```bash
 # 结束 Node.js 进程
@@ -257,10 +260,16 @@ taskkill /F /IM node.exe
 
 ```bash
 # 检查 Client
-curl http://localhost:3001
+curl http://localhost:8080
 
 # 检查 Core Service
-curl http://localhost:3002/api/health
+curl http://localhost:3002/core/health
+
+# 检查 Doc-Kit
+curl http://localhost:8100/doc-kit/health
+
+# 检查 Docs-Seeker
+curl http://localhost:8001/v1/health
 ```
 
 ## 🎯 最佳实践
