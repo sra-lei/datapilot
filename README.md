@@ -85,10 +85,12 @@ datapilot/
 
 **✅ 已跑通**：文档入库 → 智能问答 → 评估集管理 → 在线评测 → 评估看板，评测与调优闭环已经成型。
 
-**🔧 进行中 · chat 链路可观测**：`docs-seeker` 已预留 Langfuse 链路同步的接入位（`LANGFUSE_PUBLIC_KEY` / `LANGFUSE_SECRET_KEY` / `LANGFUSE_HOST` 环境变量与依赖已声明），接入后即可追踪 chat 全链路：
+**✅ 已完成 · chat 链路可观测**：`docs-seeker` 已接入 Langfuse 全链路追踪（`LANGFUSE_PUBLIC_KEY` / `LANGFUSE_SECRET_KEY` / `LANGFUSE_BASE_URL` 或 `LANGFUSE_HOST` 环境变量；未配置时自动降级为 no-op）：
 
-- 语义缓存命中、向量检索、重排序、LLM 生成等各环节的用时
-- 大模型的输入与输出，方便回溯回答
+- 一个问答请求 = 一条 trace（`chat-response`），多轮会话用 `session_id` 分组（请求体可选字段），用户维度用 `user_id` 归因
+- 语义缓存命中、查询分解、多路检索（dense/BM25/摘要）与 RRF 融合、向量化、LLM 生成等各环节的用时
+- 大模型的输入与输出、模型名与 token 用量，方便回溯回答与成本核算
+- 接入实现遵循 [Langfuse 官方 skill](https://github.com/langfuse/skills) 与[追踪最佳实践](https://langfuse.com/docs/observability/best-practices)：稳定命名、正确观测类型（retriever/generation/embedding）、输入输出只记录必要信息、测试环境自动禁用上报
 
 **🎯 规划中**：
 
