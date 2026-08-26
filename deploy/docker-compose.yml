@@ -79,6 +79,8 @@ services:
     environment:
       PYTHONUNBUFFERED: "1"
       PYTHONDONTWRITEBYTECODE: "1"
+      # 容器内通过服务名 redis 访问本栈内置的 Redis Stack（.env 无需再配 REDIS_URL）
+      REDIS_URL: "redis://redis:6379/0"
     command: uvicorn docs_seeker.app:app --host 0.0.0.0 --port 8001 --workers 1
     ports:
       - "8001:8001"
@@ -176,12 +178,16 @@ services:
         max-file: "3"
 
   # ----------------------------------------------------------
-  # Redis：语义缓存（docs-seeker 使用，容器内通过服务名 redis:6379 访问）
+  # Redis Stack：语义缓存（docs-seeker 使用，容器内通过服务名 redis:6379 访问）
+  # 必须是 redis-stack-server（含 RediSearch ft() + RedisJSON json() 模块）——
+  # 普通 redis 镜像缺模块，docs-seeker 语义缓存会初始化失败降级
   # ----------------------------------------------------------
   redis:
-    image: redis:7-alpine
+    image: redis/redis-stack-server:latest
     container_name: datapolit-redis
-    command: redis-server --maxmemory 128mb --maxmemory-policy allkeys-lru
+    environment:
+      # 镜像入口是 redis-stack-server，额外参数通过 REDIS_ARGS 传入
+      REDIS_ARGS: "--maxmemory 128mb --maxmemory-policy allkeys-lru"
     volumes:
       - redis_data:/data
     networks:

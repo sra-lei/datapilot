@@ -46,10 +46,9 @@ bash deploy.sh down          # 停止全部服务（数据卷保留）
 
 - **Core + MySQL**：`DB_*`（应用用户连接 MySQL）、`MYSQL_*`（MySQL 初始化）
 - **Doc-Kit**：`DASHSCOPE_API_KEY`、`DEEPSEEK_API_KEY`、`MILVUS_URI`、`MILVUS_API_KEY`（大写变量名）
-- **Docs-Seeker**：`MILVUS_TOKEN`、`SEMANTIC_CACHE_ENABLED`、`REDIS_URL=redis://redis:6379`
+- **Docs-Seeker**：`MILVUS_TOKEN`、`SEMANTIC_CACHE_ENABLED`（`REDIS_URL` 无需配置——compose 已固定为 `redis://redis:6379/0`，容器内通过服务名访问本栈内置的 Redis Stack）
 
 > ⚠️ `.env` 已被 `.gitignore` 忽略，请勿提交真实密钥。
-> ⚠️ 不要修改 `REDIS_URL` 的 host（`redis`）与端口（`6379`）——容器内通过服务名访问。
 
 ## 手动方式（不依赖脚本）
 
